@@ -415,24 +415,9 @@ $("#sc").innerHTML=(SUBS[flt]||[]).length?`<div class="dd"><button class="ddb" d
 $("#fl").innerHTML=[["todas","Todas as camisas"],...act().filter(([k])=>["selecoes","clubes","retro"].includes(k))].map(([k,v])=>`<a href="#loja" data-k="${k}">${v}</a>`).join("");
 $("#mn").innerHTML=[["todas","Todas as camisas"],...act()].map(([k,v])=>`<button data-k="${k}">${v}${cs(k)}</button>`).join("")+"<button data-g>Guia de tamanhos</button><button data-pr>Prazo de entrega</button>"}
 const nz=t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-const NZA={brasil:"brazil",alemanha:"germany",espanha:"spain",franca:"france",italia:"italy",inglaterra:"england",holanda:"netherlands",japao:"japan",eua:"usa","estados unidos":"usa",short:"shorts",bermuda:"shorts"};
-function matchSearch(p,q){
-  if(!q)return true;
-  const tokens=nz(q).split(/\s+/).filter(w=>w&&w!=="camisa"&&w!=="de"&&w!=="do"&&w!=="da");
-  if(!tokens.length)return true;
-  const hay=nz([p.name,p.team,p.sub,p.tm,p.ver,p._lg,p._cat,p.cat].filter(Boolean).join(" "));
-  return tokens.every(t=>{const alt=NZA[t];return hay.includes(t)||(alt&&hay.includes(alt))});
-}
-function shop(){
-  const l=P.filter(p=>(flt==="todas"||p.cat===flt)&&(!sb||p.sub===sb||p._lg===sb)&&matchSearch(p,qs));
-  const np=Math.max(1,Math.ceil(l.length/PER));if(pg>np)pg=np;
-  $("#nr").textContent=l.length+(l.length===1?" produto encontrado":" produtos encontrados");
-  $("#gr").innerHTML=l.slice((pg-1)*PER,pg*PER).map(p=>{
-    const precoHtml=(p.sobConsulta||p.pr==null)?`<b style="color:var(--or)">Sob consulta</b>`:`${p.pr!=null?"":"a partir de "}<b>${money(from(p))}</b>`;
-    return`<button class="card" data-id="${p.id}"><div class="ph">${p.nat?'<span class="badge">PRONTA ENTREGA</span>':""}${shirt(p)}${p.ver?`<span class="vr">${p.ver}</span>`:""}</div><div class="tm">${p.tm||p.sub||p.team}</div><div class="nm">${p.name}</div><div class="pr">${precoHtml}</div></button>`;
-  }).join("")||"<p style='color:var(--mut)'>"+(sb?"Novos modelos de "+sb+" em breve.":flt!=="todas"&&!qs?"Novos modelos desta categoria em breve.":"Nenhum produto encontrado com esse termo.")+" <a href='"+wa("Olá! Estou procurando por: "+qs)+"' target='_blank' style='color:var(--or)'>Chame no WhatsApp que a gente encontra para você!</a></p>";
-  drawPg(l.length);
-}
+function shop(){const l=P.filter(p=>(flt==="todas"||p.cat===flt)&&(!sb||p.sub===sb||p._lg===sb)&&nz(p.name).includes(nz(qs)));const np=Math.max(1,Math.ceil(l.length/PER));if(pg>np)pg=np;
+$("#nr").textContent=l.length+(l.length===1?" camisa":" camisas");
+$("#gr").innerHTML=l.slice((pg-1)*PER,pg*PER).map(p=>`<button class="card" data-id="${p.id}"><div class="ph">${p.nat?'<span class="badge">PRONTA ENTREGA</span>':""}${shirt(p)}${p.ver?`<span class="vr">${p.ver}</span>`:""}</div><div class="tm">${p.tm||p.sub||p.team}</div><div class="nm">${p.name}</div><div class="pr">${p.pr!=null?"":"a partir de "}<b>${money(from(p))}</b></div></button>`).join("")||"<p style='color:var(--mut)'>"+(sb?"Novos modelos de "+sb+" em breve.":flt!=="todas"&&!qs?"Novos modelos desta categoria em breve.":"Nenhuma camisa encontrada.")+" Chame a gente no WhatsApp que a gente encontra.</p>";drawPg(l.length)}
 const PER=20;
 function drawPg(c){const n=Math.ceil(c/PER),el=$("#pgn");if(n<2){el.innerHTML="";return}
 const set=new Set([1,n,pg-1,pg,pg+1]);if(pg<=3)[2,3,4].forEach(x=>set.add(x));if(pg>=n-2)[n-1,n-2,n-3].forEach(x=>set.add(x));
@@ -452,28 +437,21 @@ $("#ov").onclick=closeAll;document.querySelectorAll("[data-c]").forEach(b=>b.onc
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeAll()});
 $("#bm").onclick=()=>openP("#menu");$("#bb").onclick=()=>{drawBag();openP("#bag")};
 $("#bs").onclick=()=>{$("#sb").classList.toggle("on");$("#q").focus()};
-$("#q").oninput=e=>{qs=e.target.value.trim();flt="todas";pg=1;sb="";cats();shop()};
-$("#q").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();$("#loja").scrollIntoView({behavior:"smooth"})}};
+$("#q").oninput=e=>{qs=e.target.value.toLowerCase().trim();flt="todas";pg=1;sb="";cats();shop();$("#loja").scrollIntoView({behavior:"smooth"})};
 const wa=t=>`https://api.whatsapp.com/send?phone=${WA}&text=${encodeURIComponent(t)}`;
 ["#wc","#wf","#wb"].forEach(s=>$(s).href=wa("Ol\u00E1! Vim pelo site da NC Sports."));
 let S,bag=[];
 const price=(p,o,z,x)=>(p.pr!=null?p.pr:(o==="nac"?p.nac:p.int))+(x?30:0),OL={nac:"Estoque nacional",int:"Estoque internacional",fg:"Frete gr\u00E1tis"};
 function detail(id,h){if(!P.some(x=>x.id===id))return;S={p:P.find(x=>x.id===id),z:null,q:1,v:0,x:false,nm:"",nu:"",o:"int"};drawD();openP("#sheet");$("#sheet").scrollTop=0;if(!h)location.hash="p-"+id}
-function drawD(){
-  const{p,o,z,q,v,x}=S;
-  const isSob=p.sobConsulta||p.pr==null;
-  const t=isSob?0:price(p,o,z,x)*q;
-  const msgWa=encodeURIComponent("Olá! Gostaria de consultar o valor e disponibilidade deste modelo: "+p.name+(z?" (Tamanho "+z+")":""));
-  const btnWa=`https://api.whatsapp.com/send?phone=${WA}&text=${msgWa}`;
-
-  $("#pd").innerHTML=`<button class="bk" data-bk>← Voltar para a loja</button><div class="pdl"><div class="ph">${shirt(p,v)}</div>${!p.img||p.img[1]?`<div class="sw"><button class="${v?"":"on"}" data-v="0">Frente</button><button class="${v?"on":""}" data-v="1">Costas</button></div>`:""}<div class="pdd"><h3>Descrição do produto</h3><p>${p.d}</p></div></div><div class="pdr"><div class="eb">${p.team}</div><h2>${p.name}</h2><div class="big" style="${isSob?"color:var(--or)":""}">${isSob?"Sob consulta":money(price(p,o,z,x))}</div>
-${isSob?"":`<div class="lb">Origem do envio</div><div class="opts">${["nac","int"].map(k=>{const off=k==="nac"&&!p.nat;return`<button class="opt ${o===k?"on":""}${off?" off":""}"${off?` disabled aria-disabled="true"`:""} data-o="${k}">${k==="nac"?"Estoque nacional":"Estoque internacional"}<b>${money(price(p,k,null))}</b><small>${off?"Sob consulta":k==="nac"?"5 a 10 dias úteis":"20 a 30 dias úteis"}</small></button>`}).join("")}</div>`}
+function drawD(){const{p,o,z,q,v,x}=S,t=price(p,o,z,x)*q;
+$("#pd").innerHTML=`<button class="bk" data-bk>\u2190 Voltar para a loja</button><div class="pdl"><div class="ph">${shirt(p,v)}</div>${!p.img||p.img[1]?`<div class="sw"><button class="${v?"":"on"}" data-v="0">Frente</button><button class="${v?"on":""}" data-v="1">Costas</button></div>`:""}<div class="pdd"><h3>Descri\u00E7\u00E3o do produto</h3><p>${p.d}</p></div></div><div class="pdr"><div class="eb">${p.team}</div><h2>${p.name}</h2><div class="big">${money(price(p,o,z,x))}</div>
+<div class="lb">Origem do envio</div><div class="opts">${["nac","int"].map(k=>{const off=k==="nac"&&!p.nat;return`<button class="opt ${o===k?"on":""}${off?" off":""}"${off?` disabled aria-disabled="true"`:""} data-o="${k}">${k==="nac"?"Estoque nacional":"Estoque internacional"}<b>${money(price(p,k,null))}</b><small>${off?"Sob consulta":k==="nac"?"5 a 10 dias \u00FAteis":"20 a 30 dias \u00FAteis"}</small></button>`}).join("")}</div>
 <div class="lb" style="display:flex;justify-content:space-between;align-items:baseline">Selecione o tamanho<button type="button" class="gl" data-g="${gTab(p)}">Guia de tamanhos</button></div><div class="sz">${(p.sz||["P","M","G","GG","2XG","3XG","4XG"]).map(s=>`<button class="${z===s?"on":""}" data-z="${s}">${s}</button>`).join("")}</div>
-${isSob?"":`<div class="lb">Quantidade</div><div class="qt"><button data-q="-1" aria-label="Diminuir">−</button><span>${q}</span><button data-q="1" aria-label="Aumentar">+</button></div>`}
-${isSob?"":`<div class="pz${x?" on":""}"><button type="button" data-pz aria-pressed="${!!x}"><span>Personalizar camisa<small>Nome e número · +R$ 30,00</small></span><i>${x?"✓":""}</i></button>${x?`<div class="pzf"><div><label for="pzn">Nome</label><input class="in" id="pzn" maxlength="15" placeholder="Ex.: SILVA" autocomplete="off" value="${S.nm}"></div><div><label for="pzu">Número</label><input class="in" id="pzu" maxlength="2" inputmode="numeric" placeholder="10" autocomplete="off" value="${S.nu}"></div></div>`:""}</div>`}
-${isSob?`<a class="btn" href="${btnWa}" target="_blank" rel="noopener" style="background:#25d366;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;font-weight:700">Consultar valor no WhatsApp</a><p class="nt" style="margin-top:10px">Valor sob consulta para este modelo. Fale diretamente conosco pelo WhatsApp informando o tamanho desejado!</p>`:`<button class="btn" data-a="add">Adicionar à sacola — ${money(t)}</button><button class="btn o" data-a="buy">Comprar direto pelo WhatsApp</button><div class="er" id="er"></div><p class="nt">Entrega estimada: ${o==="nac"?"5 a 10":"20 a 30"} dias úteis · Frete grátis · Pagamento combinado pelo WhatsApp<br><button type="button" class="gl" data-pr>Entenda o prazo de entrega</button></p>`}
-</div>`;
-}
+<div class="lb">Quantidade</div><div class="qt"><button data-q="-1" aria-label="Diminuir">\u2212</button><span>${q}</span><button data-q="1" aria-label="Aumentar">+</button></div>
+<div class="pz${x?" on":""}"><button type="button" data-pz aria-pressed="${!!x}"><span>Personalizar camisa<small>Nome e n\u00FAmero \u00B7 +R$ 30,00</small></span><i>${x?"\u2713":""}</i></button>${x?`<div class="pzf"><div><label for="pzn">Nome</label><input class="in" id="pzn" maxlength="15" placeholder="Ex.: SILVA" autocomplete="off" value="${S.nm}"></div><div><label for="pzu">N\u00FAmero</label><input class="in" id="pzu" maxlength="2" inputmode="numeric" placeholder="10" autocomplete="off" value="${S.nu}"></div></div>`:""}</div>
+<button class="btn" data-a="add">Adicionar \u00E0 sacola \u2014 ${money(t)}</button><button class="btn o" data-a="buy">Comprar direto pelo WhatsApp</button><div class="er" id="er"></div>
+<p class="nt">Entrega estimada: ${o==="nac"?"5 a 10":"20 a 30"} dias \u00FAteis \u00B7 Frete gr\u00E1tis \u00B7 Pagamento combinado pelo WhatsApp<br><button type="button" class="gl" data-pr>Entenda o prazo de entrega</button></p>
+</div>`}
 document.addEventListener("click",e=>{const c=e.target.closest("[data-id],[data-o],[data-z],[data-q],[data-a],[data-v],[data-bk],[data-pz]");if(!c)return;const d=c.dataset;if("bk" in d)return closeAll();
 if(d.id)return detail(+d.id);if(d.v){S.v=+d.v;return drawD()}if(d.o){if(!c.disabled){S.o=d.o;drawD()}return}if(d.z){S.z=d.z;return drawD()}if(d.q){S.q=Math.max(1,S.q+ +d.q);return drawD()}if("pz" in d){S.x=!S.x;return drawD()}
 if(!S.z){$("#er").textContent="Selecione o tamanho para continuar.";return}
@@ -614,12 +592,12 @@ const findIn=(idx,tp)=>{for(const e of idx)if(tp.includes(e.kp))return e};
 
 /* ---- tipo / preco (tabela do site) ---- */
 function typeOf(name,cat,lg){
-  if(/\bshorts?\b|\bbermuda\b|\bpants?\b|\bcalcao\b|\bcalcoes\b/i.test(name))return{ver:"Short",pr:null,sobConsulta:true};
-  if(lg==="NFL"||lg==="MLB"||lg==="NHL"||/\b(nfl|mlb|nhl)\b/i.test(name)||/baseball|hockey|american football/i.test(name))return{ver:lg||"Americano",pr:null,sobConsulta:true};
   if(/\bkids?\b|child|youth|infantil|junior/i.test(name))return{ver:"Infantil",pr:170,sz:["16","18","20","22","24","26","28"]};
-  if(cat==="treino"||/windbreaker|jacket|tracksuit|coat|agasalho/i.test(name))return{ver:"Corta-Vento",pr:320};
-  if(cat==="retro"||/\bretro\b|vintage/i.test(name))return{ver:"Retrô",pr:200};
-  if(cat==="nba"||lg==="NBA"||/\bnba\b/i.test(name))return{ver:"NBA",pr:220};
+  if(cat==="treino")return{ver:"Corta-Vento",pr:320};
+  if(/windbreaker|jacket|tracksuit|coat|agasalho/i.test(name))return{ver:"Corta-Vento",pr:320};
+  if(cat==="retro")return{ver:"Retr\u00f4",pr:200};
+  if(cat==="nba")return{ver:lg||"NBA",pr:lg==="NFL"?250:220};
+  if(/\bretro\b|vintage/i.test(name))return{ver:"Retr\u00f4",pr:200};
   if(/women|woman|feminina|female|lady/i.test(name))return{ver:"Feminina",pr:150};
   if(/player|jogador/i.test(name))return{ver:"Jogador",pr:180};
   return{ver:"Torcedor",pr:150};
@@ -637,7 +615,7 @@ let BASE=location.href;
 const fixImg=x=>{x=String(x).trim();return/^data:/i.test(x)?x:/^http:\/\//i.test(x)?x.replace(/^http:/i,"https:"):/^https:\/\//i.test(x)?x:new URL(x.replace(/^\/(?!\/)/,""),BASE).href};
 function toProduct(r,i){
   if(!r||typeof r!=="object")return null;
-    const p={id:isNaN(idn)?1000+i:idn,name,cat,_cat:String(rawCat||""),team:name,ver:T.ver,c:["#222","#fff","#e8832f"],d:name,sz:T.sz||null,nat:false,pr:T.pr,sobConsulta:!!T.sobConsulta};
+  const name=clean(pick(r,["titulo","name","nome","title","product_name","produto"]));
   if(!name)return null;
   const rawCat=pick(r,["liga","cat","categoria","category","league"]);
   const cat=catKey(rawCat);
