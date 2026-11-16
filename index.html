@@ -414,9 +414,9 @@ $("#sc").innerHTML=(SUBS[flt]||[]).length?`<div class="dd"><button class="ddb" d
 $("#fl").innerHTML=[["todas","Todas as camisas"],...act().filter(([k])=>["selecoes","clubes","retro"].includes(k))].map(([k,v])=>`<a href="#loja" data-k="${k}">${v}</a>`).join("");
 $("#mn").innerHTML=[["todas","Todas as camisas"],...act()].map(([k,v])=>`<button data-k="${k}">${v}${cs(k)}</button>`).join("")+"<button data-g>Guia de tamanhos</button><button data-pr>Prazo de entrega</button>"}
 const nz=t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-function shop(){const l=P.filter(p=>(flt==="todas"||p.cat===flt)&&(!sb||p.sub===sb)&&nz(p.name).includes(nz(qs)));const np=Math.max(1,Math.ceil(l.length/PER));if(pg>np)pg=np;
+function shop(){const l=P.filter(p=>(flt==="todas"||p.cat===flt)&&(!sb||p.sub===sb||p._lg===sb)&&nz(p.name).includes(nz(qs)));const np=Math.max(1,Math.ceil(l.length/PER));if(pg>np)pg=np;
 $("#nr").textContent=l.length+(l.length===1?" camisa":" camisas");
-$("#gr").innerHTML=l.slice((pg-1)*PER,pg*PER).map(p=>`<button class="card" data-id="${p.id}"><div class="ph">${p.nat?'<span class="badge">PRONTA ENTREGA</span>':""}${shirt(p)}${p.ver?`<span class="vr">${p.ver}</span>`:""}</div><div class="tm">${p.sub||p.team}</div><div class="nm">${p.name}</div><div class="pr">${p.pr!=null?"":"a partir de "}<b>${money(from(p))}</b></div></button>`).join("")||"<p style='color:var(--mut)'>"+(sb?"Novos modelos de "+sb+" em breve.":flt!=="todas"&&!qs?"Novos modelos desta categoria em breve.":"Nenhuma camisa encontrada.")+" Chame a gente no WhatsApp que a gente encontra.</p>";drawPg(l.length)}
+$("#gr").innerHTML=l.slice((pg-1)*PER,pg*PER).map(p=>`<button class="card" data-id="${p.id}"><div class="ph">${p.nat?'<span class="badge">PRONTA ENTREGA</span>':""}${shirt(p)}${p.ver?`<span class="vr">${p.ver}</span>`:""}</div><div class="tm">${p.tm||p.sub||p.team}</div><div class="nm">${p.name}</div><div class="pr">${p.pr!=null?"":"a partir de "}<b>${money(from(p))}</b></div></button>`).join("")||"<p style='color:var(--mut)'>"+(sb?"Novos modelos de "+sb+" em breve.":flt!=="todas"&&!qs?"Novos modelos desta categoria em breve.":"Nenhuma camisa encontrada.")+" Chame a gente no WhatsApp que a gente encontra.</p>";drawPg(l.length)}
 const PER=20;
 function drawPg(c){const n=Math.ceil(c/PER),el=$("#pgn");if(n<2){el.innerHTML="";return}
 const set=new Set([1,n,pg-1,pg,pg+1]);if(pg<=3)[2,3,4].forEach(x=>set.add(x));if(pg>=n-2)[n-1,n-2,n-3].forEach(x=>set.add(x));
@@ -510,8 +510,15 @@ addEventListener("hashchange",route);if(location.hash)route();
 const JSON_URL="catalogo_nc_sports.json";
 const RAW="https://raw.githubusercontent.com/NorthernClothes/NCSports/main/"+JSON_URL;
 const pick=(o,ks)=>{for(const k of ks){if(o[k]!==undefined&&o[k]!==null&&o[k]!=="")return o[k]}};
-const num=v=>{if(typeof v==="number")return v;if(v==null)return undefined;const n=parseFloat(String(v).replace(/[^\d,.-]/g,"").replace(/\.(?=\d{3}\b)/g,"").replace(",","."));return isNaN(n)?undefined:n};
 const norm=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"");
+const n2=t=>String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+const STOP=new Set(["de","fc","cf","ac","afc","sc","cd","club","the","of","as","rc","ogc","aj","fk","ssc","sv","vfl","vfb"]);
+const k2=t=>n2(t).split(" ").filter(w=>w&&!STOP.has(w)).join(" ");
+const ENT={amp:"&",quot:'"',apos:"'",lt:"",gt:"",nbsp:" "};
+const dec=t=>String(t==null?"":t).replace(/&#x([0-9a-f]+);/gi,(m,h)=>String.fromCharCode(parseInt(h,16))).replace(/&#(\d+);/g,(m,d)=>String.fromCharCode(+d)).replace(/&(amp|quot|apos|lt|gt|nbsp);/g,(m,n)=>ENT[n]);
+const clean=t=>dec(dec(t)).replace(/"([^"]*)"/g,"\u201c$1\u201d").replace(/"/g,"\u201d").replace(/[<>]/g,"").replace(/\s+/g," ").trim();
+
+/* ---- categorias ---- */
 function catKey(v){
   if(!v)return"outras";
   if(CATS[v])return v;
@@ -531,69 +538,10 @@ function catKey(v){
   if(/serie a|italy|italian/.test(n))return"seriea";
   return"outras";
 }
-const IMG=/^(data:image\/|https?:\/\/|\.{0,2}\/)|\.(jpe?g|png|webp|gif|avif|svg)(\?.*)?$/i;
-function findImgs(r){
-  let v=pick(r,["img","imgs","imagens","imagem","images","image","foto","fotos","photo","photos","picture","pictures","url_imagem","image_url","imageUrl","thumbnail","thumb","cover"]);
-  const flat=x=>Array.isArray(x)?x.flatMap(flat):(x&&typeof x==="object")?Object.values(x).flatMap(flat):(typeof x==="string"?[x]:[]);
-  let a=flat(v).filter(x=>IMG.test(x.trim()));
-  if(!a.length)a=Object.values(r).flatMap(flat).filter(x=>IMG.test(x.trim())&&!/^(https?:\/\/)?[^/]*\/?$/.test(x.trim()));
-  return a.map(x=>x.trim());
-}
-function typeOf(name,r){
-  const t=name+" "+(pick(r,["tipo","type","versao","version","ver"])||"");
-  if(/kids?|child|youth|infantil|junior/i.test(t))return{ver:"Infantil",pr:170,sz:["16","18","20","22","24","26","28"]};
-  if(/retro|vintage|retr\u00f4/i.test(t))return{ver:"Retr\u00f4",pr:200};
-  if(/windbreaker|jacket|corta|tracksuit|coat|agasalho/i.test(t))return{ver:"Corta-Vento",pr:320};
-  if(/\bnfl\b/i.test(t))return{ver:"NFL",pr:250};
-  if(/\bnba\b|basketball/i.test(t))return{ver:"NBA",pr:220};
-  if(/women|woman|feminina|female|lady/i.test(t))return{ver:"Feminina",pr:150};
-  if(/player|jogador/i.test(t))return{ver:"Jogador",pr:180};
-  return{ver:"Torcedor",pr:150};
-}
-function list(d){
-  if(Array.isArray(d))return d;
-  if(d&&typeof d==="object"){
-    for(const k of["produtos","products","camisas","catalogo","items","itens","data","jerseys"])if(Array.isArray(d[k]))return d[k];
-    const a=Object.values(d).find(Array.isArray);if(a)return a;
-    const v=Object.values(d);if(v.length&&v.every(x=>x&&typeof x==="object"))return v;
-  }
-  return[];
-}
-let BASE=location.href;
-function toProduct(r,i){
-  if(!r||typeof r!=="object")return null;
-  const name=pick(r,["name","nome","titulo","title","product_name","produto"]);
-  if(!name)return null;
-  const T=typeOf(String(name),r);
-  const rawCat=pick(r,["cat","categoria","category","league","liga"]);let cat=catKey(rawCat);
-  if(T.ver==="Retr\u00f4")cat="retro";
-  const sub=pick(r,["sub","subcategoria","subcategory","time","clube","club","campeonato","team"]);
-  let imgs=findImgs(r).map(x=>/^data:/i.test(x)?x:/^http:\/\//i.test(x)?x.replace(/^http:/i,"https:"):/^https:\/\//i.test(x)?x:new URL(x.replace(/^\/(?!\/)/,""),BASE).href);
-  const jp=num(pick(r,["pr","preco","pre\u00e7o","price","valor","preco_venda","sale_price"]));
-  const p={
-    id:num(pick(r,["id","codigo","c\u00f3digo","sku"]))??(1000+i),
-    name:String(name),cat,sub:sub?String(sub):undefined,
-    team:String(pick(r,["team","equipe"])||sub||name),
-    ver:T.ver,_cat:String(rawCat||""),
-    c:["#222","#fff","#e8832f"],
-    d:String(pick(r,["d","descricao","descri\u00e7\u00e3o","description"])||(T.ver+" - "+name)),
-    sz:pick(r,["sz","tamanhos","sizes"])||T.sz||null,
-    nat:!!pick(r,["nat","pronta_entrega","prontaEntrega","estoque_nacional"]),
-    pr:(jp>=100&&jp<=1000)?jp:T.pr
-  };
-  if(imgs.length)p.img=imgs;
-  return p;
-}
-function canonSub(p){
-  const lists=[SUBS[p.cat]||[],...Object.entries(SUBS).filter(([k])=>k!==p.cat).map(e=>e[1])];
-  const n=norm(p.sub||"");
-  if(n){for(const l of lists){const f=l.find(x=>norm(x)===n);if(f){p.sub=f;return}}}
-  const nm=" "+String(p.name).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ")+" ";
-  const own=(SUBS[p.cat]||[]).slice().sort((a,b)=>b.length-a.length);
-  for(const x of own){const t=" "+x.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()+" ";if(nm.includes(t)){p.sub=x;return}}
-}
 
-const n2=t=>String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+/* ---- ligas americanas ---- */
+const LGX=[["NBA",/\bnba\b|basket/],["NFL",/\bnfl\b|american football/],["MLB",/\bmlb\b|baseball/],["NHL",/\bnhl\b|hockey/]];
+const lgOf=t=>{const f=LGX.find(x=>x[1].test(t));return f&&f[0]};
 const LGS={
 NBA:"Atlanta|Hawks;Boston|Celtics;Brooklyn|Nets;Charlotte|Hornets;Chicago|Bulls;Cleveland|Cavaliers;Dallas|Mavericks;Denver|Nuggets;Detroit|Pistons;Golden State|Warriors;Houston|Rockets;Indiana|Pacers;Los Angeles|Clippers;Los Angeles|Lakers;Memphis|Grizzlies;Miami|Heat;Milwaukee|Bucks;Minnesota|Timberwolves;New Orleans|Pelicans;New York|Knicks;Oklahoma City|Thunder;Orlando|Magic;Philadelphia|76ers;Phoenix|Suns;Portland|Trail Blazers;Sacramento|Kings;San Antonio|Spurs;Toronto|Raptors;Utah|Jazz;Washington|Wizards",
 NFL:"Arizona|Cardinals;Atlanta|Falcons;Baltimore|Ravens;Buffalo|Bills;Carolina|Panthers;Chicago|Bears;Cincinnati|Bengals;Cleveland|Browns;Dallas|Cowboys;Denver|Broncos;Detroit|Lions;Green Bay|Packers;Houston|Texans;Indianapolis|Colts;Jacksonville|Jaguars;Kansas City|Chiefs;Las Vegas|Raiders;Los Angeles|Chargers;Los Angeles|Rams;Miami|Dolphins;Minnesota|Vikings;New England|Patriots;New Orleans|Saints;New York|Giants;New York|Jets;Philadelphia|Eagles;Pittsburgh|Steelers;San Francisco|49ers;Seattle|Seahawks;Tampa Bay|Buccaneers;Tennessee|Titans;Washington|Commanders",
@@ -602,29 +550,101 @@ NHL:"Anaheim|Ducks;Boston|Bruins;Buffalo|Sabres;Calgary|Flames;Carolina|Hurrican
 const TEAMS=[];
 Object.entries(LGS).forEach(([lg,str])=>str.split(";").forEach(t=>{const[c,n]=t.split("|"),w=n2(n).split(" ");TEAMS.push({lg,label:c+" "+n+" ("+lg+")",ck:n2(c),nk:n2(n),nk2:w.length>1&&w[w.length-1].length>=5?w[w.length-1]:null})}));
 function detectUS(p){
+  const lg=lgOf(p.name.toLowerCase())||lgOf(String(p._cat).toLowerCase())||"";
   const t=(" "+n2(p.name)+" ").replace(" trailblazers "," trail blazers ").replace(" sixers "," 76ers ");
-  let c=TEAMS.filter(x=>t.includes(" "+x.nk+" "));
-  if(!c.length)c=TEAMS.filter(x=>x.nk2&&t.includes(" "+x.nk2+" "));
-  if(!c.length)return false;
-  if(c.length>1){
-    const h=(p.name+" "+p._cat).toLowerCase(),lg=/nba|basket/.test(h)?"NBA":/nfl/.test(h)?"NFL":/mlb|baseball/.test(h)?"MLB":/nhl|hockey/.test(h)?"NHL":"";
-    const f=lg?c.filter(x=>x.lg===lg):[];if(f.length)c=f;
-    if(c.length>1){const bc=c.filter(x=>t.includes(" "+x.ck+" "));if(bc.length)c=bc}
+  const pool=lg?TEAMS.filter(x=>x.lg===lg):TEAMS;
+  let c=pool.filter(x=>t.includes(" "+x.nk+" "));
+  if(!c.length)c=pool.filter(x=>x.nk2&&t.includes(" "+x.nk2+" "));
+  if(c.length>1){const bc=c.filter(x=>t.includes(" "+x.ck+" "));if(bc.length)c=bc}
+  if(c.length){p.sub=c[0].label;p.team=p.sub;p._lg=c[0].lg;p._t=1;return}
+  if(lg){p.sub=lg;p.team=lg;p._lg=lg;p._t=1}
+}
+
+/* ---- selecoes (pais -> regiao) ---- */
+const REG={E:"Europa",A:"Am\u00e9rica",F:"\u00c1frica",S:"\u00c1sia e Oceania"};
+const NATS="Alb\u00e2nia|E|albania;Alemanha|E|germany;Arm\u00eania|E|armenia;\u00c1ustria|E|austria;Azerbaij\u00e3o|E|azerbaijan;B\u00e9lgica|E|belgium;Bielorr\u00fassia|E|belarus;B\u00f3snia|E|bosnia;Bulg\u00e1ria|E|bulgaria;Chipre|E|cyprus;Cazaquist\u00e3o|E|kazakhstan;Cro\u00e1cia|E|croatia;Dinamarca|E|denmark;Eslov\u00e1quia|E|slovakia;Eslov\u00eania|E|slovenia;Esc\u00f3cia|E|scotland;Espanha|E|spain;Est\u00f4nia|E|estonia;Finl\u00e2ndia|E|finland;Fran\u00e7a|E|france;Ge\u00f3rgia|E|georgia;Gr\u00e9cia|E|greece;Holanda|E|netherlands,holland;Hungria|E|hungary;Inglaterra|E|england;Irlanda|E|ireland,republic of ireland;Irlanda do Norte|E|northern ireland;Isl\u00e2ndia|E|iceland;Israel|E|israel;It\u00e1lia|E|italy;Kosovo|E|kosovo;Let\u00f4nia|E|latvia;Litu\u00e2nia|E|lithuania;Luxemburgo|E|luxembourg;Maced\u00f4nia do Norte|E|north macedonia;Malta|E|malta;Mold\u00e1via|E|moldova;Montenegro|E|montenegro;Noruega|E|norway;Pa\u00eds de Gales|E|wales;Pol\u00f4nia|E|poland;Portugal|E|portugal;Rep\u00fablica Tcheca|E|czech republic,czechia,czech;Rom\u00eania|E|romania;R\u00fassia|E|russia;S\u00e9rvia|E|serbia;Su\u00e9cia|E|sweden;Su\u00ed\u00e7a|E|switzerland;Turquia|E|turkey,turkiye;Ucr\u00e2nia|E|ukraine;Ilhas Faro\u00e9|E|faroe islands;"
++"Argentina|A|argentina;Bol\u00edvia|A|bolivia;Brasil|A|brazil,brasil;Canad\u00e1|A|canada;Chile|A|chile;Col\u00f4mbia|A|colombia;Costa Rica|A|costa rica;Cuba|A|cuba;Cura\u00e7ao|A|curacao;Equador|A|ecuador;El Salvador|A|el salvador;Estados Unidos|A|usa,united states;Guatemala|A|guatemala;Haiti|A|haiti;Honduras|A|honduras;Jamaica|A|jamaica;M\u00e9xico|A|mexico;Nicar\u00e1gua|A|nicaragua;Panam\u00e1|A|panama;Paraguai|A|paraguay;Peru|A|peru;Rep\u00fablica Dominicana|A|dominican republic;Suriname|A|suriname;Trinidad e Tobago|A|trinidad and tobago,trinidad;Uruguai|A|uruguay;Venezuela|A|venezuela;"
++"Angola|F|angola;Arg\u00e9lia|F|algeria;Benin|F|benin;Burkina Faso|F|burkina faso;Camar\u00f5es|F|cameroon;Cabo Verde|F|cape verde;Congo|F|congo;RD Congo|F|dr congo,congo dr;Costa do Marfim|F|ivory coast,cote d ivoire;Egito|F|egypt;Gab\u00e3o|F|gabon;Gana|F|ghana;Guin\u00e9|F|guinea;Guin\u00e9 Equatorial|F|equatorial guinea;Guin\u00e9-Bissau|F|guinea bissau;Qu\u00eania|F|kenya;Mali|F|mali;Marrocos|F|morocco;Mo\u00e7ambique|F|mozambique;Nig\u00e9ria|F|nigeria;N\u00edger|F|niger;Senegal|F|senegal;\u00c1frica do Sul|F|south africa;Sud\u00e3o|F|sudan;Tanz\u00e2nia|F|tanzania;Togo|F|togo;Tun\u00edsia|F|tunisia;Uganda|F|uganda;Z\u00e2mbia|F|zambia;Zimb\u00e1bue|F|zimbabwe;Madagascar|F|madagascar;Maurit\u00e2nia|F|mauritania;Nam\u00edbia|F|namibia;L\u00edbia|F|libya;Eti\u00f3pia|F|ethiopia;Ruanda|F|rwanda;G\u00e2mbia|F|gambia;Serra Leoa|F|sierra leone;Lib\u00e9ria|F|liberia;Comores|F|comoros;"
++"Jap\u00e3o|S|japan;Coreia do Sul|S|south korea,korea republic,korea;Coreia do Norte|S|north korea;China|S|china;Austr\u00e1lia|S|australia;Nova Zel\u00e2ndia|S|new zealand;Ir\u00e3|S|iran;Iraque|S|iraq;Ar\u00e1bia Saudita|S|saudi arabia;Catar|S|qatar;Emirados \u00c1rabes|S|united arab emirates,uae;Jord\u00e2nia|S|jordan;Uzbequist\u00e3o|S|uzbekistan;Kuwait|S|kuwait;Om\u00e3|S|oman;Bahrein|S|bahrain;S\u00edria|S|syria;Palestina|S|palestine;L\u00edbano|S|lebanon;Tail\u00e2ndia|S|thailand;Vietn\u00e3|S|vietnam;\u00cdndia|S|india;Indon\u00e9sia|S|indonesia;Mal\u00e1sia|S|malaysia;Filipinas|S|philippines;Quirguist\u00e3o|S|kyrgyzstan;Hong Kong|S|hong kong;Singapura|S|singapore;I\u00eamen|S|yemen;Tajiquist\u00e3o|S|tajikistan";
+const NATIDX=[];
+NATS.split(";").forEach(e=>{const[pt,r,ts]=e.split("|");ts.split(",").forEach(t=>NATIDX.push({label:pt,r,k:k2(t),kp:" "+k2(t)+" "}))});
+NATIDX.sort((a,b)=>b.k.length-a.k.length);
+
+/* ---- clubes ---- */
+const BUND="1860 Munique:1860;Dynamo Dresden:dynamo dresden,dresden;Arminia Bielefeld:bielefeld;Karlsruher SC:karlsruher;Preußen Münster:preussen munster,munster;Hansa Rostock:rostock;Eintracht Braunschweig:braunschweig;Greuther Fürth:furth,fuerth;Paderborn:paderborn;Magdeburg:magdeburg;Jahn Regensburg:regensburg;Elversberg:elversberg;Energie Cottbus:cottbus;Bayern Munich:bayern;Borussia Dortmund:dortmund;Bayer Leverkusen:leverkusen;RB Leipzig:leipzig;Eintracht Frankfurt:frankfurt;VfB Stuttgart:stuttgart;Borussia M\u00f6nchengladbach:gladbach,monchengladbach;VfL Wolfsburg:wolfsburg;Werder Bremen:bremen;SC Freiburg:freiburg;Hoffenheim:hoffenheim;Mainz 05:mainz;Union Berlin:union berlin;Augsburg:augsburg;Schalke 04:schalke;Hamburger SV:hamburg,hamburger;Hertha Berlin:hertha;K\u00f6ln:koln,cologne;Hannover 96:hannover;Fortuna D\u00fcsseldorf:dusseldorf;Heidenheim:heidenheim;St. Pauli:pauli;Holstein Kiel:kiel;Bochum:bochum;Darmstadt:darmstadt;N\u00fcrnberg:nurnberg,nuremberg;Kaiserslautern:kaiserslautern";
+const ALIAS={"Inter de Mil\u00e3o":["inter milan","internazionale","inter"],"Olympique de Marselha":["olympique marseille","marseille"],"Sporting CP":["sporting lisbon","sporting cp"],"PSG":["paris saint germain","paris sg"],"West Ham United":["west ham"],"Wolverhampton Wanderers":["wolves","wolverhampton"],"Brighton & Hove Albion":["brighton"],"Coventry City":["coventry"],"Newcastle United":["newcastle"],"Tottenham Hotspur":["tottenham","spurs"],"Nottingham Forest":["nottingham"],"Leicester City":["leicester"],"West Bromwich Albion":["west brom","west bromwich"],"Manchester United":["man united","man utd","manchester untied"],"Chelsea":["cheslea"],"Deportivo La Coru\u00f1a":["la coruna","deportivo"],"Villarreal":["villareal"],"Rayo Vallecano":["vallecano"],"Vasco da Gama":["vasco"],"Cear\u00e1 Sporting":["ceara"],"Sport Recife":["recife"],"Red Bull Bragantino":["rb bragantino","bragantino"],"Atl\u00e9tico de Madrid":["atletico madrid"],"Celta de Vigo":["celta"],"Athletic Bilbao":["athletic club"],"Real Betis":["betis"],"Hellas Verona":["verona"],"Olympique Lyonnais":["lyon"],"AS Monaco":["monaco"],"Stade Rennais":["rennes"],"Saint-\u00c9tienne":["saint etienne"],"Paris FC":["paris fc"]};
+const XCLUBS="Boca Juniors:boca juniors;River Plate:river plate;Club Am\u00e9rica:club america;Chivas Guadalajara:chivas;Colo-Colo:colo colo;Tigres UANL:tigres;Celtic:celtic;Rangers:rangers;Ajax:ajax;PSV Eindhoven:psv;Feyenoord:feyenoord;Inter Miami:inter miami;Al Nassr:al nassr;Al Hilal:al hilal;Galatasaray:galatasaray;Fenerbah\u00e7e:fenerbahce;Be\u015fikta\u015f:besiktas;Pe\u00f1arol:penarol;Independiente:independiente;Racing Club:racing club;San Lorenzo:san lorenzo;Estudiantes:estudiantes;Cruz Azul:cruz azul;Pumas UNAM:pumas;Monterrey:monterrey;Santos Laguna:santos laguna;LA Galaxy:la galaxy;Olympiacos:olympiacos;Anderlecht:anderlecht;Club Brugge:club brugge;Shakhtar Donetsk:shakhtar;Dynamo Kyiv:dynamo kyiv;Red Star Belgrade:red star;Dinamo Zagreb:dinamo zagreb;Red Bull Salzburg:salzburg;Young Boys:young boys;Toluca:toluca;Le\u00f3n:leon;Necaxa:necaxa;Pachuca:pachuca;Atlas:atlas;Am\u00e9rica de Cali:america de cali;Millonarios:millonarios;Nacional (Uruguai):nacional;Universidad de Chile:universidad de chile;Col\u00f3n:colon;Newell's Old Boys:newells;Rosario Central:rosario central;V\u00e9lez Sarsfield:velez;Lan\u00fas:lanus";
+const OWN=["clubes","premier","laliga","seriea","ligue1","portugal"];
+let OWNIDX=null,ALLIDX=null;
+const add=(arr,label,keys)=>keys.forEach(k=>{const kk=k2(k);if(kk.length>=3)arr.push({label,k:kk,kp:" "+kk+" "})});
+function buildIdx(){
+  OWNIDX={};ALLIDX=[];
+  OWN.forEach(c=>{const a=[];(SUBS[c]||[]).forEach(x=>add(a,x,[x,...(ALIAS[x]||[])]));OWNIDX[c]=a});
+  {const a=[];BUND.split(";").forEach(e=>{const[l,al]=e.split(":");add(a,l,[l,...al.split(",")])});OWNIDX.bundesliga=a}
+  Object.values(OWNIDX).forEach(a=>a.forEach(e=>ALLIDX.push(e)));
+  {const a=[];XCLUBS.split(";").forEach(e=>{const[l,al]=e.split(":");add(a,l,[l,al]);});a.forEach(e=>ALLIDX.push(e))}
+  NATIDX.forEach(e=>ALLIDX.push(e));
+  Object.values(OWNIDX).forEach(a=>a.sort((x,y)=>y.k.length-x.k.length));
+  ALLIDX.sort((x,y)=>y.k.length-x.k.length);
+}
+const findIn=(idx,tp)=>{for(const e of idx)if(tp.includes(e.kp))return e};
+
+/* ---- tipo / preco (tabela do site) ---- */
+function typeOf(name,cat,lg){
+  if(/\bkids?\b|child|youth|infantil|junior/i.test(name))return{ver:"Infantil",pr:170,sz:["16","18","20","22","24","26","28"]};
+  if(cat==="treino")return{ver:"Corta-Vento",pr:320};
+  if(/windbreaker|jacket|tracksuit|coat|agasalho/i.test(name))return{ver:"Corta-Vento",pr:320};
+  if(cat==="retro")return{ver:"Retr\u00f4",pr:200};
+  if(cat==="nba")return{ver:lg||"NBA",pr:lg==="NFL"?250:220};
+  if(/\bretro\b|vintage/i.test(name))return{ver:"Retr\u00f4",pr:200};
+  if(/women|woman|feminina|female|lady/i.test(name))return{ver:"Feminina",pr:150};
+  if(/player|jogador/i.test(name))return{ver:"Jogador",pr:180};
+  return{ver:"Torcedor",pr:150};
+}
+
+function list(d){
+  if(Array.isArray(d))return d;
+  if(d&&typeof d==="object"){
+    for(const k of["camisas","produtos","products","catalogo","items","itens","data"])if(Array.isArray(d[k]))return d[k];
+    const a=Object.values(d).find(Array.isArray);if(a)return a;
   }
-  p.sub=c[0].label;p.team=p.sub;p._t=1;return true;
+  return[];
 }
-const NAT="Brasil:brazil,brasil;Argentina:argentina;Portugal:portugal;Espanha:spain,espana;Fran\u00e7a:france,franca;Alemanha:germany,alemanha;Inglaterra:england,inglaterra;It\u00e1lia:italy,italia;Holanda:netherlands,holland,holanda;B\u00e9lgica:belgium,belgica;Cro\u00e1cia:croatia;Uruguai:uruguay;Col\u00f4mbia:colombia;M\u00e9xico:mexico;Estados Unidos:usa,united states;Jap\u00e3o:japan;Marrocos:morocco;Senegal:senegal;Su\u00ed\u00e7a:switzerland;Dinamarca:denmark;Pol\u00f4nia:poland;Su\u00e9cia:sweden;Noruega:norway;Turquia:turkey;Chile:chile;Paraguai:paraguay;Equador:ecuador;Peru:peru;Coreia do Sul:south korea;Austr\u00e1lia:australia;Canad\u00e1:canada;Nig\u00e9ria:nigeria;Egito:egypt;Camar\u00f5es:cameroon;Gana:ghana;Arg\u00e9lia:algeria;Costa do Marfim:ivory coast;Irlanda:ireland;Esc\u00f3cia:scotland;Pa\u00eds de Gales:wales";
-let CLUBS=null;
-function detectClub(p){
-  if(!CLUBS){CLUBS=[];["clubes","premier","laliga","seriea","ligue1","portugal","bundesliga"].forEach(k=>(SUBS[k]||[]).forEach(x=>CLUBS.push([x,n2(x)])));
-    NAT.split(";").forEach(e=>{const[l,ts]=e.split(":");ts.split(",").forEach(t=>CLUBS.push([l,n2(t)]))});
-    CLUBS=CLUBS.filter(x=>x[1].length>=4).sort((a,b)=>b[1].length-a[1].length)}
-  const t=" "+n2(p.name)+" ",f=CLUBS.find(x=>t.includes(" "+x[1]+" "));
-  if(!f)return false;p.sub=f[0];p.team=f[0];p._t=1;return true;
+let BASE=location.href;
+const fixImg=x=>{x=String(x).trim();return/^data:/i.test(x)?x:/^http:\/\//i.test(x)?x.replace(/^http:/i,"https:"):/^https:\/\//i.test(x)?x:new URL(x.replace(/^\/(?!\/)/,""),BASE).href};
+function toProduct(r,i){
+  if(!r||typeof r!=="object")return null;
+  const name=clean(pick(r,["titulo","name","nome","title","product_name","produto"]));
+  if(!name)return null;
+  const rawCat=pick(r,["liga","cat","categoria","category","league"]);
+  const cat=catKey(rawCat);
+  const lg=cat==="nba"?(lgOf(name.toLowerCase())||lgOf(String(rawCat||"").toLowerCase())||""):"";
+  const T=typeOf(name,cat,lg);
+  const imgs=[...new Set([pick(r,["frente","img","imagem","image","foto"]),pick(r,["costas","verso","back"])].flat().filter(Boolean).map(fixImg))];
+  const idn=parseInt(r.id,10);
+  const p={id:isNaN(idn)?1000+i:idn,name,cat,_cat:String(rawCat||""),team:name,ver:T.ver,c:["#222","#fff","#e8832f"],d:name,sz:T.sz||null,nat:false,pr:T.pr};
+  if(imgs.length)p.img=imgs;
+  return p;
 }
+function assignSub(p){
+  const tp=" "+k2(p.name)+" ";
+  if(p.cat==="nba")return detectUS(p);
+  if(p.cat==="selecoes"){const f=findIn(NATIDX,tp);if(f){p.sub=REG[f.r];p.tm=f.label;p.team=f.label;p._t=1}return}
+  if(p.cat==="treino"||p.cat==="retro"){const f=findIn(ALLIDX,tp);if(f){p.sub=f.label;p.team=f.label;p._t=1}return}
+  const l=OWNIDX[p.cat];if(l){const f=findIn(l,tp);if(f){p.sub=f.label;p.team=f.label;p._t=1}}
+}
+const byPt=(a,b)=>a.localeCompare(b,"pt-BR");
 function buildSubs(items){
-  items.forEach(p=>{if(p.cat==="nba"){if(!detectUS(p))canonSub(p)}else if(p.cat==="treino"){if(!detectClub(p))canonSub(p)}else canonSub(p)});
-  ["nba","treino"].forEach(k=>{SUBS[k]=[...new Set(items.filter(p=>p.cat===k&&p._t).map(p=>p.sub))].sort((a,b)=>a.localeCompare(b,"pt-BR"))});
+  if(!OWNIDX)buildIdx();
+  items.forEach(assignSub);
+  const sets={};items.forEach(p=>{if(p._t){(sets[p.cat]||(sets[p.cat]=new Set())).add(p.sub)}});
+  const has=(c,x)=>sets[c]&&sets[c].has(x);
+  OWN.forEach(c=>{SUBS[c]=(SUBS[c]||[]).filter(x=>has(c,x))});
+  SUBS.selecoes=Object.values(REG).filter(x=>has("selecoes",x));
+  ["treino","retro","bundesliga"].forEach(c=>{SUBS[c]=[...(sets[c]||[])].sort(byPt)});
+  {const L=items.filter(p=>p.cat==="nba"&&p._t),lgs=["NBA","NFL","MLB","NHL"].filter(g=>L.some(p=>p._lg===g));SUBS.nba=[...lgs,...[...new Set(L.map(p=>p.sub))].filter(x=>!lgs.includes(x)).sort(byPt)]}
+  SUBS.outras=[];
+  Object.keys(SUBS).forEach(k=>{if(!SUBS[k].length)delete SUBS[k]});
 }
 window.ncFb=function(el,id){
   console.warn("Imagem nao carregou:",el.getAttribute("src"));
@@ -636,13 +656,15 @@ window.ncFb=function(el,id){
 function heroSlides(){$("#hs").innerHTML=[...P].filter(p=>p.img).sort((a,b)=>b.id-a.id).slice(0,4).map(p=>shirt(p)).join("")}
 function apply(data){
   const items=list(data).map(toProduct).filter(Boolean);
-  console.log("NC catalogo:",items.length,"itens; exemplo bruto:",list(data)[0]);
-  buildSubs(items);P.length=0;items.forEach(p=>P.push(p));
+  buildSubs(items);
+  items.sort((a,b)=>(b.img?1:0)-(a.img?1:0)); /* camisas sem foto ficam por ultimo */
+  P.length=0;items.forEach(p=>P.push(p));
   heroSlides();cats();shop();
   if(/^#p-/.test(location.hash))route();
   return items.length;
 }
 const get=u=>fetch(u,{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);BASE=r.url||u;return r.json()});
+window.__ncApply=apply;
 get(JSON_URL).catch(()=>get(RAW))
   .then(d=>{const n=apply(d);if(!n)$("#nr").textContent="O arquivo "+JSON_URL+" foi lido, mas nenhuma camisa foi encontrada nele."})
   .catch(e=>{console.error("Erro ao carregar "+JSON_URL,e);$("#nr").textContent="N\u00e3o foi poss\u00edvel carregar o cat\u00e1logo ("+JSON_URL+"). Confira se o arquivo est\u00e1 no GitHub e se o JSON \u00e9 v\u00e1lido."});
