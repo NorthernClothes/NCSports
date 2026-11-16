@@ -390,7 +390,8 @@ const FL={eng:'<rect width="36" height="24" fill="#fff"/><path d="M16 0h4v24h-4z
 FL.world='<rect width="36" height="24" fill="#0b3d91"/><circle cx="18" cy="12" r="9" fill="none" stroke="#fff" stroke-width="1.5"/><ellipse cx="18" cy="12" rx="4" ry="9" fill="none" stroke="#fff" stroke-width="1.5"/><path d="M9 12h18M10.5 7h15M10.5 17h15" stroke="#fff" stroke-width="1.2"/>';
 const EMB={premier:["PL","eng"],laliga:["LA LIGA","esp"],portugal:["LP","por"],ligue1:["L1","fra"],seriea:["SA","ita"],bundesliga:["BL","ger"],clubes:["BR","bra"],selecoes:["SEL"],retro:["RETR\u00D4","world"],outras:["+"],treino:["TR"],nba:["NBA"]};
 const emb=k=>{if(LG[k])return`<circle cx="100" cy="120" r="40" fill="#f4f4f4" stroke="#e8832f" stroke-width="3"/><image href="${LG[k]}" x="76" y="93" width="48" height="54" preserveAspectRatio="xMidYMid meet"/>`;const e=EMB[k];if(!e)return"";const n=e[0].length,s=n<3?30:n<5?19:n<6?16:12;return`<circle cx="100" cy="${e[1]?112:120}" r="33" fill="#161616" stroke="#e8832f" stroke-width="3"/><text x="100" y="${(e[1]?112:120)+s*.36}" text-anchor="middle" font-size="${s}" font-weight="900" fill="#e8832f">${e[0]}</text>${e[1]?`<g transform="translate(82 156)">${FL[e[1]]}<rect width="36" height="24" fill="none" stroke="rgba(0,0,0,.45)"/></g>`:""}`};
-function shirt(p,v=0){if(p.img)return`<img src="${p.img[v]||p.img[0]}" alt="${p.name}" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover">`;const[a,t,k]=p.c,id="c"+u++;let f=`<rect width="200" height="220" fill="${a}"/>`;
+function shirt(p,v=0){if(p.img)return`<img src="${p.img[v]||p.img[0]}" alt="${p.name}" loading="lazy" decoding="async" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover">`;
+const[a,t,k]=p.c,id="c"+u++;let f=`<rect width="200" height="220" fill="${a}"/>`;
 if(p.st)for(let i=0;i<8;i+=2)f+=`<rect y="${20+i*28}" width="200" height="28" fill="${k}"/>`;
 if(p.pat)f+='<path d="M60 90l30-10-20 70-25 5zM110 80l30 5-30 90-25-5zM140 130l25 5-15 60-25-5z" fill="#fff" opacity=".35"/>';
 const col=v?`<path d="M70 20q30 10 60 0" fill="none" stroke="${t}" stroke-width="8"/><text x="100" y="95" text-anchor="middle" font-size="15" font-weight="900" fill="${t}">NOME</text><text x="100" y="160" text-anchor="middle" font-size="64" font-weight="900" fill="${t}">10</text>`:p.pat?`<path d="M62 20l38 50 38-50-8-5-30 30-30-30z" fill="#fff"/>`:`<path d="M70 20q30 28 60 0" fill="none" stroke="${t}" stroke-width="10"/>`;
@@ -494,52 +495,79 @@ $("#prazo .x").innerHTML=icon("x");$("#wpz").href=wa("Ol\u00E1! Vim pelo site da
 fetch('./catalogo_nc_sports.json')
   .then(res => res.json())
   .then(dados => {
-    const lista = Array.isArray(dados) ? dados : (dados.camisas || []);
+    const lista = Array.isArray(dados) ? dados : (dados.camisas || dados.produtos || []);
     
-    // Converte os produtos do JSON para o formato do site
     P = lista.map((item, idx) => {
-      const f = item.fotos || {};
-      const frente = f.frente || f[0] || "";
-      const costa = f.costa || f[1] || frente;
+      const nome = item.nome || item.title || item.titulo || "Camisa de Time";
+      const catOrig = (item.categoria || "").toLowerCase();
+      const nLower = nome.toLowerCase();
+
+      // REGRA AUTOMÁTICA DA SUA TABELA DE VALORES
+      let preco = 150.00; // Padrão: Camisa Torcedor (R$ 150)
       
-      // Define a categoria do menu
+      if (nLower.includes("jogador") || nLower.includes("player")) {
+        preco = 180.00;
+      } else if (catOrig.includes("retro") || nLower.includes("retro") || nLower.includes("retrô") || nLower.includes("199") || nLower.includes("198") || nLower.includes("200")) {
+        preco = 200.00;
+      } else if (nLower.includes("infantil") || nLower.includes("kids") || nLower.includes("youth") || nLower.includes("kit")) {
+        preco = 170.00;
+      } else if (catOrig.includes("nba") || nLower.includes("nba")) {
+        preco = 220.00;
+      } else if (catOrig.includes("nfl") || nLower.includes("nfl")) {
+        preco = 250.00;
+      } else if (catOrig.includes("training") || nLower.includes("corta-vento") || nLower.includes("windbreaker") || nLower.includes("jacket") || nLower.includes("suit")) {
+        preco = 320.00;
+      }
+
+      // Fotos de frente e costas
+      let frente = "";
+      let costa = "";
+      if (item.fotos) {
+        frente = item.fotos.frente || item.fotos[0] || "";
+        costa = item.fotos.costa || item.fotos[1] || frente;
+      } else if (item.images) {
+        frente = item.images[0] || "";
+        costa = item.images[1] || frente;
+      }
+
+      // Mapeamento de categoria do menu
       let cat = "todas";
-      const c = (item.categoria || "").toLowerCase();
-      if (c.includes("national")) cat = "selecoes";
-      else if (c.includes("premier")) cat = "premier";
-      else if (c.includes("la liga")) cat = "laliga";
-      else if (c.includes("serie a")) cat = "seriea";
-      else if (c.includes("bundesliga")) cat = "bundesliga";
-      else if (c.includes("brasileir")) cat = "brasileirao";
-      else if (c.includes("retro")) cat = "retro";
-      else if (c.includes("nba")) cat = "nba";
+      if (catOrig.includes("national") || catOrig.includes("seleç")) cat = "selecoes";
+      else if (catOrig.includes("premier")) cat = "premier";
+      else if (catOrig.includes("la liga") || catOrig.includes("laliga")) cat = "laliga";
+      else if (catOrig.includes("serie a")) cat = "seriea";
+      else if (catOrig.includes("bundesliga")) cat = "bundesliga";
+      else if (catOrig.includes("brasileir")) cat = "brasileirao";
+      else if (catOrig.includes("retro")) cat = "retro";
+      else if (catOrig.includes("nba")) cat = "nba";
       else cat = "outras";
 
       return {
         id: idx + 1,
-        name: item.nome || item.title || "Camisa de Time",
-        team: item.nome ? item.nome.split(" ")[0] : "Time",
+        name: nome,
+        team: nome.split(" ")[0] || "NC Sports",
         cat: cat,
         sub: "",
-        pr: 159.90, // Preço padrão em reais
-        nac: 189.90,
-        int: 159.90,
+        pr: preco,
+        nac: preco + 30.00,
+        int: preco,
         nat: false,
         img: [frente, costa],
-        d: "Camisa oficial importada com tecido de alta tecnologia. Confortável e resistente. Fotos reais de frente e costas."
+        d: "Camisa oficial importada com alta fidelidade de detalhes e acabamento premium. Fotos reais do produto."
       };
     });
 
-    console.log(`Sucesso: ${P.length} camisas carregadas no site!`);
+    console.log(`${P.length} camisas carregadas com preços oficiais!`);
     cats();
     shop();
     if(location.hash) route();
   })
   .catch(err => {
-    console.error("Erro ao carregar catalogo_nc_sports.json:", err);
+    console.error("Erro ao carregar catálogo:", err);
     cats();
     shop();
   });
+
 
 function route(){const m=/^#p-(\d+)$/.exec(location.hash);if(m){if(!S||S.p.id!==+m[1]||!$("#sheet").classList.contains("on"))detail(+m[1],true)}else closeAll()}
 addEventListener("hashchange",route);if(location.hash)route();
