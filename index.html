@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8">
+<html lang="pt-BR"><head><meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>NC Sports – Northern Clothes</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,600;0,900;1,900&family=Bebas+Neue&family=Barlow:wght@600&display=swap" rel="stylesheet">
@@ -412,7 +412,7 @@ function shop(){const l=P.filter(p=>(flt==="todas"||p.cat===flt)&&(!sb||p.sub===
 $("#nr").textContent=l.length+(l.length===1?" camisa":" camisas");
 $("#gr").innerHTML=l.slice((pg-1)*PER,pg*PER).map(p=>`<button class="card" data-id="${p.id}"><div class="ph">${p.nat?'<span class="badge">PRONTA ENTREGA</span>':""}${shirt(p)}${p.ver?`<span class="vr">${p.ver}</span>`:""}</div><div class="tm">${p.sub||p.team}</div><div class="nm">${p.name}</div><div class="pr">${p.pr!=null?"":"a partir de "}<b>${money(from(p))}</b></div></button>`).join("")||"<p style='color:var(--mut)'>"+(sb?"Novos modelos de "+sb+" em breve.":flt!=="todas"&&!qs?"Novos modelos desta categoria em breve.":"Nenhuma camisa encontrada.")+" Chame a gente no WhatsApp que a gente encontra.</p>";drawPg(l.length)}
 const PER=20;
-function drawPg(c){const n=Math.ceil(c/PER),el=$("#pgn");if(n<2){el.innerHTML="";return}
+function drawPg(c){const n=Math.ceil(c/PER),el=$("#pgn");if(n<2){el.innerHTML="";return}let pages=[1];for(let i=Math.max(2,pg-2);i<=Math.min(n-1,pg+2);i++)pages.push(i);if(n>1)pages.push(n);pages=[...new Set(pages)].sort((a,b)=>a-b);let html=`<button data-pg="${pg-1}" ${pg<2?"disabled":""} aria-label="Anterior">‹</button>`;let last=0;for(let p of pages){if(last&&p-last>1)html+=`<span style="padding:0 8px;color:var(--mut);align-self:center">...</span>`;html+=`<button data-pg="${p}" class="${p===pg?"on":""}">${p}</button>`;last=p}html+=`<button data-pg="${pg+1}" ${pg>=n?"disabled":""} aria-label="Próxima">›</button>`;el.innerHTML=html}
 el.innerHTML=`<button data-pg="${pg-1}"${pg<2?" disabled":""} aria-label="P\u00E1gina anterior">\u2039</button>`+Array.from({length:n},(_,i)=>`<button data-pg="${i+1}" class="${i+1===pg?"on":""}" aria-label="P\u00E1gina ${i+1}">${i+1}</button>`).join("")+`<button data-pg="${pg+1}"${pg>=n?" disabled":""} aria-label="Pr\u00F3xima p\u00E1gina">\u203A</button>`}
 document.addEventListener("click",e=>{const b=e.target.closest("[data-pg]");if(!b||b.disabled)return;pg=+b.dataset.pg;shop();$("#loja").scrollIntoView({behavior:"smooth"})});
 document.addEventListener("click",e=>{const p=$("#ddp");if(!p)return;const b=e.target.closest("[data-dd]");if(b){p.hidden=!p.hidden;b.setAttribute("aria-expanded",!p.hidden)}else if(!e.target.closest("#ddp"))p.hidden=true});
