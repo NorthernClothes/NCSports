@@ -155,7 +155,7 @@ footer summary{cursor:pointer;color:var(--mut);padding:6px 0}
 .pg>small{display:block;color:var(--mut);font-size:13px;margin:6px 0 10px}
 .rw{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;padding:12px 12px 12px 16px;background:#0d0d0d;border:1px solid var(--ln);border-radius:12px}
 .rw span{font:600 15px/1.25 Barlow,Inter,sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#e6e3dd}
-.rw b{font:400 28px/1 "Bebas Neue",Impact,sans-serif;letter-spacing:.02em;color:var(--or);background:rgba(232,131,47,.12);border:1px solid rgba(232,131,47,.35);border-radius:8px;padding:7px 12px 5px;white-space:nowrap}
+.rw b{font:400 28px/1 "Bebas Neue",Impact,sans-serif;letter-spacing:.02em;color:var(--or);background:rgba(232,131,47,.12);border:1px solid rgba(232,131,47,.35);border-radius:8px;padding:7px 12px 5px;white-space:nowrap}.rw.range-row b{font-size:23px;padding:6px 9px 4px}@media(max-width:600px){.rw.range-row{gap:8px;padding:10px}.rw.range-row span{flex:1;min-width:0}.rw.range-row b{font-size:clamp(15px,4.5vw,19px);padding:6px 8px 4px;letter-spacing:0}}
 .ds{margin-top:16px;border:1px solid #4a2d12;border-radius:16px;padding:24px 20px;background:radial-gradient(ellipse at 100% 0,rgba(232,131,47,.2),transparent 60%),var(--pn)}
 .ds h3{font:400 30px/1 "Bebas Neue",Impact,sans-serif;letter-spacing:.04em}
 .ds p{color:var(--mut);font-size:14px;margin-top:6px}
@@ -237,11 +237,7 @@ footer summary{cursor:pointer;color:var(--mut);padding:6px 0}
 @keyframes wp{0%{transform:scale(1);opacity:.75}100%{transform:scale(1.75);opacity:0}}
 @keyframes ww{0%,60%,100%{transform:rotate(0)}66%{transform:rotate(-14deg)}72%{transform:rotate(12deg)}78%{transform:rotate(-8deg)}84%{transform:rotate(6deg)}90%{transform:rotate(0)}}
 @media(prefers-reduced-motion:reduce){.wa svg,.wa::before,.wa::after{animation:none}}
-#ch{position:relative;flex:1;min-width:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0;padding:0}
-#ch::-webkit-scrollbar{display:none}
-#ch button{flex:none;white-space:nowrap;padding:12px 18px;font-size:14px}
-@media(min-width:760px){#ch{flex-wrap:wrap;overflow:visible;margin:0;padding:0}#ch button{padding:12px 20px;font-size:14px}}
-.sc{margin:0 0 22px}
+#loja .cat-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:22px}#loja .cat-title h2{margin:4px 0 0}.catalog-search{width:min(340px,36vw);height:52px;display:flex;align-items:center;gap:12px;padding:0 15px;background:var(--pn);border:1px solid var(--ln);border-radius:12px;transition:border-color .2s,box-shadow .2s}.catalog-search:focus-within{border-color:var(--or);box-shadow:0 0 0 3px rgba(232,131,47,.12)}.catalog-search svg{width:22px;height:22px;flex:none;fill:none;stroke:var(--or);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.catalog-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--tx);font:inherit}.catalog-search input::placeholder{color:var(--mut)}.catbar{display:flex;align-items:flex-start;margin:0 0 20px}#ch{position:relative;flex:1;min-width:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0;padding:0}#ch::-webkit-scrollbar{display:none}#ch button{flex:none;white-space:nowrap;padding:12px 18px;font-size:14px}@media(min-width:760px){#ch{flex-wrap:wrap;overflow:visible;margin:0;padding:0}#ch button{padding:12px 20px;font-size:14px}}@media(max-width:600px){#loja .cat-head{align-items:stretch;flex-direction:column;gap:14px}.catalog-search{width:100%;max-width:none}}.grid#gr{scroll-margin-top:110px}.sc{margin:0 0 22px}
 .sc:empty{display:none}
 .dd{position:relative;display:inline-block;max-width:100%}
 .ddb{display:inline-flex;align-items:center;gap:8px;max-width:100%;border:1px solid var(--ln);background:var(--pn);border-radius:12px;padding:12px 16px;font-weight:600;font-size:15px}
@@ -311,13 +307,13 @@ a.logo{text-decoration:none;color:inherit}
 <section id="valores"><div class="eb">Valores</div><h2>Tabela de valores</h2>
 <div class="pt">
 <article class="pg"><h3>Camisas de futebol</h3><small>Seleções, clubes e retrô</small><div class="rw"><span>Camisa Torcedor</span><b>R$ 150,00</b></div><div class="rw"><span>Camisa Jogador</span><b>R$ 180,00</b></div><div class="rw"><span>Camisa Retrô</span><b>R$ 200,00</b></div><div class="rw"><span>Conjunto Infantil</span><b>R$ 170,00</b></div></article>
-<article class="pg"><h3>Esportes americanos e agasalhos</h3><small>Preços por categoria</small><div class="rw"><span>NBA</span><b>R$ 220,00</b></div><div class="rw"><span>NFL</span><b>R$ 250,00</b></div><div class="rw"><span>MLB</span><b>R$ 250,00</b></div><div class="rw"><span>NHL</span><b>R$ 350,00</b></div><div class="rw"><span>Agasalhos e treino</span><b>R$ 320,00 – R$ 450,00</b></div></article>
+<article class="pg"><h3>Esportes americanos e agasalhos</h3><small>Preços por categoria</small><div class="rw"><span>NBA</span><b>R$ 220,00</b></div><div class="rw"><span>NFL</span><b>R$ 250,00</b></div><div class="rw"><span>MLB</span><b>R$ 250,00</b></div><div class="rw"><span>NHL</span><b>R$ 350,00</b></div><div class="rw range-row"><span>Agasalhos e treino</span><b>R$ 320,00 – R$ 450,00</b></div></article>
 <article class="pg"><h3>Personalização</h3><small>Valores adicionais ao da camisa</small><div class="rw"><span>Nome e número</span><b>+R$ 30,00</b></div><div class="rw"><span>Patch (cada)</span><b>+R$ 10,00</b></div></article>
 </div>
 <div class="ds"><h3>Descontos progressivos</h3><p>Quanto mais camisas no mesmo pedido, maior o desconto.</p><div class="dg"><div><b>4%</b><span>3 camisas</span></div><div><b>7%</b><span>4 camisas</span></div><div><b>10%</b><span>5 ou mais</span></div></div></div>
 </section>
 <section id="medidas"><div class="mw"><button class="mc" data-g><div class="ig" style="margin:0;flex:none"><svg viewBox="0 0 24 24"><path d="M3 17L17 3l4 4L7 21zM7 13l2 2M10 10l2 2M13 7l2 2"/></svg></div><span><b>Guia de tamanhos</b><small>Confira as medidas de cada modelo</small></span><em>»</em></button><button class="mc" data-pr><div class="ig" style="margin:0;flex:none"><svg viewBox="0 0 24 24"><path d="M2 6h12v10H2zM14 9h4l4 4v3h-8z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></div><span><b>Prazo de entrega</b><small>Veja como funciona do pedido à entrega</small></span><em>»</em></button></div></section>
-<section id="loja"><div class="eb">Catálogo</div><h2>Camisas</h2><div class="catbar"><div class="chips" id="ch"></div><button type="button" class="catsearch-btn" id="bsc" aria-label="Buscar produtos" title="Buscar produtos"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m16 16 5 5"></path></svg></button></div><div class="csearch" id="csearch"><input id="cq" type="search" placeholder="Buscar time, camisa ou categoria" aria-label="Buscar time, camisa ou categoria"></div><div class="sc" id="sc"></div><div id="nr" style="color:var(--mut);margin:-12px 0 20px"></div><div class="grid" id="gr"></div><div class="pgn" id="pgn"></div></section>
+<section id="loja"><div class="cat-head"><div class="cat-title"><div class="eb">Catálogo</div><h2>Camisas</h2></div><label class="catalog-search" id="csearch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16 16 5 5"></path></svg><input id="cq" type="search" placeholder="Buscar camisas" aria-label="Buscar time, camisa ou categoria"></label></div><div class="catbar"><div class="chips" id="ch"></div></div><div class="sc" id="sc"></div><div id="nr" style="color:var(--mut);margin:-12px 0 20px"></div><div class="grid" id="gr"></div><div class="pgn" id="pgn"></div></section>
 <section id="info" style="padding-top:0"><div class="ib"><article class="ik"><div class="ig"><svg viewBox="0 0 24 24"><path d="M2 6h12v10H2zM14 9h4l4 4v3h-8z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></div><h3>Frete grátis</h3><p>Para todo o Brasil, em todos os pedidos.</p></article><article class="ik"><div class="ig"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg></div><h3>Formas de pagamento</h3><div class="pm"><div><b>PIX</b><small>Aprovação imediata</small></div><div><b>Cartão</b><small>Parcelamento disponível</small></div></div><p class="n2">No pagamento via cartão, as taxas da operadora são repassadas ao cliente. Antes de finalizar, informamos o valor total já com as taxas calculadas.</p></article><article class="ik"><div class="ig"><svg viewBox="0 0 24 24"><path d="M12 2l9 5v10l-9 5-9-5V7zM3 7l9 5 9-5M12 12v10"/></svg></div><h3>Acompanhamento completo</h3><p>Todos os pedidos incluem envio de foto da camisa antes do despacho, código de rastreamento e suporte até a entrega.</p></article></div></section>
 <section id="sobre"><div class="eb">Quem somos</div><h2>NC Sports<em>Northern Clothes</em></h2>
 <p class="ab">Somos a NC Sports, uma loja especializada em camisas de time, com foco em qualidade, variedade e atendimento de confiança. Desde 2021, levamos a paixão pelo futebol para todo o Brasil, sempre com os melhores preços e um atendimento diferenciado, com frete grátis.</p>
@@ -440,6 +436,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeAll()});
 $("#bm").onclick=()=>openP("#menu");$("#bb").onclick=()=>{drawBag();openP("#bag")};
 $("#bs").onclick=()=>{$("#sb").classList.toggle("on");$("#q").focus()};
 function searchCatalog(value){qs=value.toLowerCase().trim();flt="todas";pg=1;sb="";$("#q").value=value;$("#cq").value=value;cats();shop();$("#gr").scrollIntoView({behavior:"smooth",block:"start"})}
+$("#q").oninput=e=>searchCatalog(e.target.value);$("#cq").oninput=e=>searchCatalog(e.target.value);
 const wa=t=>`https://api.whatsapp.com/send?phone=${WA}&text=${encodeURIComponent(t)}`;
 ["#wc","#wf","#wb"].forEach(s=>$(s).href=wa("Ol\u00E1! Vim pelo site da NC Sports."));
 let S,bag=[];
@@ -680,6 +677,9 @@ get(JSON_URL).catch(()=>get(RAW))
 })();
 </script>
 </body></html>
+
+
+
 
 
 
