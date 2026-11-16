@@ -395,7 +395,7 @@ const FL={eng:'<rect width="36" height="24" fill="#fff"/><path d="M16 0h4v24h-4z
 FL.world='<rect width="36" height="24" fill="#0b3d91"/><circle cx="18" cy="12" r="9" fill="none" stroke="#fff" stroke-width="1.5"/><ellipse cx="18" cy="12" rx="4" ry="9" fill="none" stroke="#fff" stroke-width="1.5"/><path d="M9 12h18M10.5 7h15M10.5 17h15" stroke="#fff" stroke-width="1.2"/>';
 const EMB={premier:["PL","eng"],laliga:["LA LIGA","esp"],portugal:["LP","por"],ligue1:["L1","fra"],seriea:["SA","ita"],bundesliga:["BL","ger"],clubes:["BR","bra"],selecoes:["SEL"],retro:["RETR\u00D4","world"],outras:["+"],treino:["TR"],nba:["NBA"]};
 const emb=k=>{if(LG[k])return`<circle cx="100" cy="120" r="40" fill="#f4f4f4" stroke="#e8832f" stroke-width="3"/><image href="${LG[k]}" x="76" y="93" width="48" height="54" preserveAspectRatio="xMidYMid meet"/>`;const e=EMB[k];if(!e)return"";const n=e[0].length,s=n<3?30:n<5?19:n<6?16:12;return`<circle cx="100" cy="${e[1]?112:120}" r="33" fill="#161616" stroke="#e8832f" stroke-width="3"/><text x="100" y="${(e[1]?112:120)+s*.36}" text-anchor="middle" font-size="${s}" font-weight="900" fill="#e8832f">${e[0]}</text>${e[1]?`<g transform="translate(82 156)">${FL[e[1]]}<rect width="36" height="24" fill="none" stroke="rgba(0,0,0,.45)"/></g>`:""}`};
-function shirt(p,v=0){if(p.img)return`<img src="${p.img[v]||p.img[0]}" alt="${p.name}" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover">`;const[a,t,k]=p.c,id="c"+u++;let f=`<rect width="200" height="220" fill="${a}"/>`;
+function shirt(p,v=0){if(p.img)return`<img src="${p.img[v]||p.img[0]}" alt="${p.name}" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="ncFb(this,${p.id})" style="width:100%;height:100%;object-fit:cover">`;const[a,t,k]=p.c,id="c"+u++;let f=`<rect width="200" height="220" fill="${a}"/>`;
 if(p.st)for(let i=0;i<8;i+=2)f+=`<rect y="${20+i*28}" width="200" height="28" fill="${k}"/>`;
 if(p.pat)f+='<path d="M60 90l30-10-20 70-25 5zM110 80l30 5-30 90-25-5zM140 130l25 5-15 60-25-5z" fill="#fff" opacity=".35"/>';
 const col=v?`<path d="M70 20q30 10 60 0" fill="none" stroke="${t}" stroke-width="8"/><text x="100" y="95" text-anchor="middle" font-size="15" font-weight="900" fill="${t}">NOME</text><text x="100" y="160" text-anchor="middle" font-size="64" font-weight="900" fill="${t}">10</text>`:p.pat?`<path d="M62 20l38 50 38-50-8-5-30 30-30-30z" fill="#fff"/>`:`<path d="M70 20q30 28 60 0" fill="none" stroke="${t}" stroke-width="10"/>`;
@@ -412,7 +412,8 @@ const chx=$("#ch").scrollLeft;$("#ch").innerHTML=[["todas","Todas"],...act()].ma
 $("#sc").innerHTML=(SUBS[flt]||[]).length?`<div class="dd"><button class="ddb" data-dd aria-haspopup="true" aria-expanded="false">${SUBL[flt]||"Time"}: <b>${sb||"Todos"}</b><i></i></button><div class="ddp" id="ddp" hidden>${[["",SUBA[flt]||"Todos os times"],...SUBS[flt].map(s=>[s,s])].map(([k,v])=>`<button data-sb="${k}" class="${k===sb?"on":""}">${v}</button>`).join("")}</div></div>`:"";
 $("#fl").innerHTML=[["todas","Todas as camisas"],...act().filter(([k])=>["selecoes","clubes","retro"].includes(k))].map(([k,v])=>`<a href="#loja" data-k="${k}">${v}</a>`).join("");
 $("#mn").innerHTML=[["todas","Todas as camisas"],...act()].map(([k,v])=>`<button data-k="${k}">${v}${cs(k)}</button>`).join("")+"<button data-g>Guia de tamanhos</button><button data-pr>Prazo de entrega</button>"}
-function shop(){const l=P.filter(p=>(flt==="todas"||p.cat===flt)&&(!sb||p.sub===sb)&&p.name.toLowerCase().includes(qs));const np=Math.max(1,Math.ceil(l.length/PER));if(pg>np)pg=np;
+const nz=t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+function shop(){const l=P.filter(p=>(flt==="todas"||p.cat===flt)&&(!sb||p.sub===sb)&&nz(p.name).includes(nz(qs)));const np=Math.max(1,Math.ceil(l.length/PER));if(pg>np)pg=np;
 $("#nr").textContent=l.length+(l.length===1?" camisa":" camisas");
 $("#gr").innerHTML=l.slice((pg-1)*PER,pg*PER).map(p=>`<button class="card" data-id="${p.id}"><div class="ph">${p.nat?'<span class="badge">PRONTA ENTREGA</span>':""}${shirt(p)}${p.ver?`<span class="vr">${p.ver}</span>`:""}</div><div class="tm">${p.sub||p.team}</div><div class="nm">${p.name}</div><div class="pr">${p.pr!=null?"":"a partir de "}<b>${money(from(p))}</b></div></button>`).join("")||"<p style='color:var(--mut)'>"+(sb?"Novos modelos de "+sb+" em breve.":flt!=="todas"&&!qs?"Novos modelos desta categoria em breve.":"Nenhuma camisa encontrada.")+" Chame a gente no WhatsApp que a gente encontra.</p>";drawPg(l.length)}
 const PER=20;
@@ -563,16 +564,16 @@ function toProduct(r,i){
   const name=pick(r,["name","nome","titulo","title","product_name","produto"]);
   if(!name)return null;
   const T=typeOf(String(name),r);
-  let cat=catKey(pick(r,["cat","categoria","category","league","liga"]));
+  const rawCat=pick(r,["cat","categoria","category","league","liga"]);let cat=catKey(rawCat);
   if(T.ver==="Retr\u00f4")cat="retro";
   const sub=pick(r,["sub","subcategoria","subcategory","time","clube","club","campeonato","team"]);
-  let imgs=findImgs(r).map(x=>/^(data:|https?:)/i.test(x)?x:new URL(x,BASE).href);
+  let imgs=findImgs(r).map(x=>/^data:/i.test(x)?x:/^http:\/\//i.test(x)?x.replace(/^http:/i,"https:"):/^https:\/\//i.test(x)?x:new URL(x.replace(/^\/(?!\/)/,""),BASE).href);
   const jp=num(pick(r,["pr","preco","pre\u00e7o","price","valor","preco_venda","sale_price"]));
   const p={
     id:num(pick(r,["id","codigo","c\u00f3digo","sku"]))??(1000+i),
     name:String(name),cat,sub:sub?String(sub):undefined,
     team:String(pick(r,["team","equipe"])||sub||name),
-    ver:T.ver,
+    ver:T.ver,_cat:String(rawCat||""),
     c:["#222","#fff","#e8832f"],
     d:String(pick(r,["d","descricao","descri\u00e7\u00e3o","description"])||(T.ver+" - "+name)),
     sz:pick(r,["sz","tamanhos","sizes"])||T.sz||null,
@@ -582,11 +583,60 @@ function toProduct(r,i){
   if(imgs.length)p.img=imgs;
   return p;
 }
+function canonSub(p){
+  const lists=[SUBS[p.cat]||[],...Object.entries(SUBS).filter(([k])=>k!==p.cat).map(e=>e[1])];
+  const n=norm(p.sub||"");
+  if(n){for(const l of lists){const f=l.find(x=>norm(x)===n);if(f){p.sub=f;return}}}
+  const nm=" "+String(p.name).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ")+" ";
+  const own=(SUBS[p.cat]||[]).slice().sort((a,b)=>b.length-a.length);
+  for(const x of own){const t=" "+x.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()+" ";if(nm.includes(t)){p.sub=x;return}}
+}
+
+const n2=t=>String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+const LGS={
+NBA:"Atlanta|Hawks;Boston|Celtics;Brooklyn|Nets;Charlotte|Hornets;Chicago|Bulls;Cleveland|Cavaliers;Dallas|Mavericks;Denver|Nuggets;Detroit|Pistons;Golden State|Warriors;Houston|Rockets;Indiana|Pacers;Los Angeles|Clippers;Los Angeles|Lakers;Memphis|Grizzlies;Miami|Heat;Milwaukee|Bucks;Minnesota|Timberwolves;New Orleans|Pelicans;New York|Knicks;Oklahoma City|Thunder;Orlando|Magic;Philadelphia|76ers;Phoenix|Suns;Portland|Trail Blazers;Sacramento|Kings;San Antonio|Spurs;Toronto|Raptors;Utah|Jazz;Washington|Wizards",
+NFL:"Arizona|Cardinals;Atlanta|Falcons;Baltimore|Ravens;Buffalo|Bills;Carolina|Panthers;Chicago|Bears;Cincinnati|Bengals;Cleveland|Browns;Dallas|Cowboys;Denver|Broncos;Detroit|Lions;Green Bay|Packers;Houston|Texans;Indianapolis|Colts;Jacksonville|Jaguars;Kansas City|Chiefs;Las Vegas|Raiders;Los Angeles|Chargers;Los Angeles|Rams;Miami|Dolphins;Minnesota|Vikings;New England|Patriots;New Orleans|Saints;New York|Giants;New York|Jets;Philadelphia|Eagles;Pittsburgh|Steelers;San Francisco|49ers;Seattle|Seahawks;Tampa Bay|Buccaneers;Tennessee|Titans;Washington|Commanders",
+MLB:"Arizona|Diamondbacks;Atlanta|Braves;Baltimore|Orioles;Boston|Red Sox;Chicago|Cubs;Chicago|White Sox;Cincinnati|Reds;Cleveland|Guardians;Colorado|Rockies;Detroit|Tigers;Houston|Astros;Kansas City|Royals;Los Angeles|Angels;Los Angeles|Dodgers;Miami|Marlins;Milwaukee|Brewers;Minnesota|Twins;New York|Mets;New York|Yankees;Oakland|Athletics;Philadelphia|Phillies;Pittsburgh|Pirates;San Diego|Padres;San Francisco|Giants;Seattle|Mariners;St. Louis|Cardinals;Tampa Bay|Rays;Texas|Rangers;Toronto|Blue Jays;Washington|Nationals",
+NHL:"Anaheim|Ducks;Boston|Bruins;Buffalo|Sabres;Calgary|Flames;Carolina|Hurricanes;Chicago|Blackhawks;Colorado|Avalanche;Columbus|Blue Jackets;Dallas|Stars;Detroit|Red Wings;Edmonton|Oilers;Florida|Panthers;Los Angeles|Kings;Minnesota|Wild;Montreal|Canadiens;Nashville|Predators;New Jersey|Devils;New York|Islanders;New York|Rangers;Ottawa|Senators;Philadelphia|Flyers;Pittsburgh|Penguins;San Jose|Sharks;Seattle|Kraken;St. Louis|Blues;Tampa Bay|Lightning;Toronto|Maple Leafs;Utah|Mammoth;Vancouver|Canucks;Vegas|Golden Knights;Washington|Capitals;Winnipeg|Jets"};
+const TEAMS=[];
+Object.entries(LGS).forEach(([lg,str])=>str.split(";").forEach(t=>{const[c,n]=t.split("|"),w=n2(n).split(" ");TEAMS.push({lg,label:c+" "+n+" ("+lg+")",ck:n2(c),nk:n2(n),nk2:w.length>1&&w[w.length-1].length>=5?w[w.length-1]:null})}));
+function detectUS(p){
+  const t=(" "+n2(p.name)+" ").replace(" trailblazers "," trail blazers ").replace(" sixers "," 76ers ");
+  let c=TEAMS.filter(x=>t.includes(" "+x.nk+" "));
+  if(!c.length)c=TEAMS.filter(x=>x.nk2&&t.includes(" "+x.nk2+" "));
+  if(!c.length)return false;
+  if(c.length>1){
+    const h=(p.name+" "+p._cat).toLowerCase(),lg=/nba|basket/.test(h)?"NBA":/nfl/.test(h)?"NFL":/mlb|baseball/.test(h)?"MLB":/nhl|hockey/.test(h)?"NHL":"";
+    const f=lg?c.filter(x=>x.lg===lg):[];if(f.length)c=f;
+    if(c.length>1){const bc=c.filter(x=>t.includes(" "+x.ck+" "));if(bc.length)c=bc}
+  }
+  p.sub=c[0].label;p.team=p.sub;p._t=1;return true;
+}
+const NAT="Brasil:brazil,brasil;Argentina:argentina;Portugal:portugal;Espanha:spain,espana;Fran\u00e7a:france,franca;Alemanha:germany,alemanha;Inglaterra:england,inglaterra;It\u00e1lia:italy,italia;Holanda:netherlands,holland,holanda;B\u00e9lgica:belgium,belgica;Cro\u00e1cia:croatia;Uruguai:uruguay;Col\u00f4mbia:colombia;M\u00e9xico:mexico;Estados Unidos:usa,united states;Jap\u00e3o:japan;Marrocos:morocco;Senegal:senegal;Su\u00ed\u00e7a:switzerland;Dinamarca:denmark;Pol\u00f4nia:poland;Su\u00e9cia:sweden;Noruega:norway;Turquia:turkey;Chile:chile;Paraguai:paraguay;Equador:ecuador;Peru:peru;Coreia do Sul:south korea;Austr\u00e1lia:australia;Canad\u00e1:canada;Nig\u00e9ria:nigeria;Egito:egypt;Camar\u00f5es:cameroon;Gana:ghana;Arg\u00e9lia:algeria;Costa do Marfim:ivory coast;Irlanda:ireland;Esc\u00f3cia:scotland;Pa\u00eds de Gales:wales";
+let CLUBS=null;
+function detectClub(p){
+  if(!CLUBS){CLUBS=[];["clubes","premier","laliga","seriea","ligue1","portugal","bundesliga"].forEach(k=>(SUBS[k]||[]).forEach(x=>CLUBS.push([x,n2(x)])));
+    NAT.split(";").forEach(e=>{const[l,ts]=e.split(":");ts.split(",").forEach(t=>CLUBS.push([l,n2(t)]))});
+    CLUBS=CLUBS.filter(x=>x[1].length>=4).sort((a,b)=>b[1].length-a[1].length)}
+  const t=" "+n2(p.name)+" ",f=CLUBS.find(x=>t.includes(" "+x[1]+" "));
+  if(!f)return false;p.sub=f[0];p.team=f[0];p._t=1;return true;
+}
+function buildSubs(items){
+  items.forEach(p=>{if(p.cat==="nba"){if(!detectUS(p))canonSub(p)}else if(p.cat==="treino"){if(!detectClub(p))canonSub(p)}else canonSub(p)});
+  ["nba","treino"].forEach(k=>{SUBS[k]=[...new Set(items.filter(p=>p.cat===k&&p._t).map(p=>p.sub))].sort((a,b)=>a.localeCompare(b,"pt-BR"))});
+}
+window.ncFb=function(el,id){
+  console.warn("Imagem nao carregou:",el.getAttribute("src"));
+  const pp=P.find(x=>x.id===id);if(!pp||!pp.img){el.style.visibility="hidden";return}
+  (pp.bad=pp.bad||[]).push(el.getAttribute("src"));
+  const alt=pp.img.find(x=>!pp.bad.includes(x));if(alt){el.src=alt;return}
+  const keep=pp.img;pp.img=null;const h=shirt(pp);pp.img=keep;el.outerHTML=h;
+};
 function heroSlides(){$("#hs").innerHTML=[...P].filter(p=>p.img).sort((a,b)=>b.id-a.id).slice(0,4).map(p=>shirt(p)).join("")}
 function apply(data){
   const items=list(data).map(toProduct).filter(Boolean);
   console.log("NC catalogo:",items.length,"itens; exemplo bruto:",list(data)[0]);
-  P.length=0;items.forEach(p=>P.push(p));
+  buildSubs(items);P.length=0;items.forEach(p=>P.push(p));
   heroSlides();cats();shop();
   if(/^#p-/.test(location.hash))route();
   return items.length;
