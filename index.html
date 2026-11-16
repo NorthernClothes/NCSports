@@ -404,7 +404,7 @@ function fitT(){document.querySelectorAll(".tile h3").forEach(h=>{const w=h.clos
 addEventListener("resize",fitT);if(document.fonts)document.fonts.ready.then(fitT);
 const GLX={retro:'<svg viewBox="0 0 100 100"><path d="M30 14L16 22 4 42l15 8 5-9v50h52V41l5 9 15-8-12-20-14-8q-20 12-40 0z" fill="#1a1a1a"/><path d="M30 14l12 17 8-9-9-11zM70 14L58 31l-8-9 9-11z" fill="#e8832f"/><path d="M24 54h52v9H24z" fill="#e8832f"/><path d="M50 22v22" stroke="#e8832f" stroke-width="2.5"/><circle cx="50" cy="30" r="1.6" fill="#1a1a1a"/><circle cx="50" cy="38" r="1.6" fill="#1a1a1a"/><path d="M4 42l15 8M96 42l-15 8" stroke="#e8832f" stroke-width="4"/></svg>',outras:'<svg viewBox="0 0 100 100"><path d="M50 5L90 18V52Q90 80 50 96Q10 80 10 52V18z" fill="#1a1a1a"/><path d="M50 13L82 23V52Q82 74 50 88Q18 74 18 52V23z" fill="none" stroke="#e8832f" stroke-width="3"/><text x="50" y="66" text-anchor="middle" font-family="Barlow,Inter,Arial,sans-serif" font-size="58" font-weight="900" fill="#e8832f">?</text></svg>',treino:'<svg viewBox="0 0 100 100"><path d="M36 8h28l4 6 16 8 12 52-14 4-8-30v48H26V48l-8 30-14-4 12-52 16-8z" fill="#1a1a1a"/><rect x="36" y="6" width="28" height="14" rx="3" fill="#333"/><path d="M50 20v76" stroke="#e8832f" stroke-width="3"/><rect x="47.5" y="22" width="5" height="9" rx="1.5" fill="#e8832f"/><path d="M20 30L11 72M80 30l9 42" stroke="#e8832f" stroke-width="3.5"/></svg>',nba:'<svg viewBox="0 0 100 100"><g transform="translate(27 27)"><circle r="19" fill="#e8832f" stroke="#1a1a1a" stroke-width="2.5"/><path d="M0-19V19M-19 0H19M-13-13Q-5 0-13 13M13-13Q5 0 13 13" fill="none" stroke="#1a1a1a" stroke-width="2"/></g><g transform="translate(73 27) rotate(-35)"><ellipse rx="21" ry="12.5" fill="#e8832f" stroke="#1a1a1a" stroke-width="2.5"/><path d="M-8 0H8M-4-4V4M0-4V4M4-4V4" stroke="#1a1a1a" stroke-width="2"/><path d="M-15-8Q-12 0-15 8M15-8Q12 0 15 8" fill="none" stroke="#1a1a1a" stroke-width="2"/></g><g transform="translate(27 73)"><circle r="19" fill="#fff" stroke="#1a1a1a" stroke-width="2.5"/><path d="M-11-15Q-3 0-11 15M11-15Q3 0 11 15" fill="none" stroke="#e8832f" stroke-width="2.4" stroke-dasharray="3.2 2.6"/></g><g transform="translate(73 73)"><path d="M-20-3v9a20 8 0 0 0 40 0v-9z" fill="#1a1a1a"/><ellipse cy="-3" rx="20" ry="8" fill="#3a3a3a" stroke="#1a1a1a" stroke-width="2"/><path d="M-12-3a12 4 0 0 1 24 0" fill="none" stroke="#e8832f" stroke-width="2"/></g></svg>'};
 const gl=k=>LG[k]?`<img src="${LG[k]}" alt="${CATS[k]}">`:(GLX[k]||"")[0]==="<"?GLX[k]:`<span class="glx">${GLX[k]||""}</span>`;
-function cats(){$("#ct").innerHTML=act().map(([k,v])=>{const p=P.find(x=>x.cat===k);return`<button class="tile" data-k="${k}">${p?"":'<span class="badge">EM BREVE</span>'}<div class="pnl">${gl(k)}</div><div class="tt"><h3 style="--w:${(v.length*.68).toFixed(1)}">${v}</h3>${cs(k)}</div></button>`}).join("");fitT();
+function cats(){$("#ct").innerHTML=act().map(([k,v])=>{const p=P.find(x=>x.cat===k||x._alsoCat===k);return`<button class="tile" data-k="${k}">${p?"":'<span class="badge">EM BREVE</span>'}<div class="pnl">${gl(k)}</div><div class="tt"><h3 style="--w:${(v.length*.68).toFixed(1)}">${v}</h3>${cs(k)}</div></button>`}).join("");fitT();
 const chx=$("#ch").scrollLeft;$("#ch").innerHTML=[["todas","Todas"],...act()].map(([k,v])=>`<button data-k="${k}" class="${k===flt?"on":""}">${v}</button>`).join("");
 {const c=$("#ch"),a=c.querySelector(".on");c.scrollLeft=chx;if(a&&(a.offsetLeft<c.scrollLeft||a.offsetLeft+a.offsetWidth>c.scrollLeft+c.clientWidth))c.scrollLeft=a.offsetLeft-(c.clientWidth-a.offsetWidth)/2}
 $("#sc").innerHTML=(SUBS[flt]||[]).length?`<div class="dd"><button class="ddb" data-dd aria-haspopup="true" aria-expanded="false">${SUBL[flt]||"Time"}: <b>${sb||"Todos"}</b><i></i></button><div class="ddp" id="ddp" hidden>${[["",SUBA[flt]||"Todos os times"],...SUBS[flt].map(s=>[s,s])].map(([k,v])=>`<button data-sb="${k}" class="${k===sb?"on":""}">${v}</button>`).join("")}</div></div>`:"";
@@ -413,7 +413,7 @@ $("#mn").innerHTML=[["todas","Todas as camisas"],...act()].map(([k,v])=>`<button
 const nz=t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 const searchText=p=>nz([p.name,p.team,p.tm,p.sub,p._cat,p._lg,p.cat,p.id].filter(Boolean).join(" "));
 const queryMatches=(p,q)=>{const text=searchText(p),terms=nz(q).split(/\s+/).filter(Boolean);return terms.every(term=>text.includes(term))};
-function shop(){const l=P.filter(p=>(flt==="todas"||p.cat===flt)&&(!sb||p.sub===sb||p._lg===sb)&&queryMatches(p,qs)).sort((a,b)=>((b.img&&!b.noimg)?1:0)-((a.img&&!a.noimg)?1:0));const np=Math.max(1,Math.ceil(l.length/PER));if(pg>np)pg=np;
+function shop(){const l=P.filter(p=>(flt==="todas"||p.cat===flt||p._alsoCat===flt)&&(!sb||p.sub===sb||p._alsoSub===sb||p._lg===sb)&&queryMatches(p,qs)).sort((a,b)=>((b.img&&!b.noimg)?1:0)-((a.img&&!a.noimg)?1:0));const np=Math.max(1,Math.ceil(l.length/PER));if(pg>np)pg=np;
 $("#nr").textContent=l.length+(l.length===1?" camisa":" camisas");
 $("#gr").innerHTML=l.slice((pg-1)*PER,pg*PER).map(p=>`<button class="card" data-id="${p.id}"><div class="ph">${p.nat?'<span class="badge">PRONTA ENTREGA</span>':""}${shirt(p)}${p.ver?`<span class="vr">${p.ver}</span>`:""}</div><div class="tm">${p.tm||p.sub||p.team}</div><div class="nm">${p.name}</div><div class="pr">${p.priceRange?`<b>${money(320)} – ${money(450)}</b>`:p.consult?"A consultar":`${p.pr!=null?"":"a partir de "}<b>${money(from(p))}</b>`}</div></button>`).join("")||"<p style='color:var(--mut)'>"+(sb?"Novos modelos de "+sb+" em breve.":flt!=="todas"&&!qs?"Novos modelos desta categoria em breve.":"Nenhuma camisa encontrada.")+" Chame a gente no WhatsApp que a gente encontra.</p>";drawPg(l.length)}
 const PER=20;
@@ -577,14 +577,14 @@ const ALIAS={"Inter de Mil\u00e3o":["inter milan","internazionale","inter"],"Oly
 const XCLUBS="Boca Juniors:boca juniors;River Plate:river plate;Club Am\u00e9rica:club america;Chivas Guadalajara:chivas;Colo-Colo:colo colo;Tigres UANL:tigres;Celtic:celtic;Rangers:rangers;Ajax:ajax;PSV Eindhoven:psv;Feyenoord:feyenoord;Inter Miami:inter miami;Al Nassr:al nassr;Al Hilal:al hilal;Galatasaray:galatasaray;Fenerbah\u00e7e:fenerbahce;Be\u015fikta\u015f:besiktas;Pe\u00f1arol:penarol;Independiente:independiente;Racing Club:racing club;San Lorenzo:san lorenzo;Estudiantes:estudiantes;Cruz Azul:cruz azul;Pumas UNAM:pumas;Monterrey:monterrey;Santos Laguna:santos laguna;LA Galaxy:la galaxy;Olympiacos:olympiacos;Anderlecht:anderlecht;Club Brugge:club brugge;Shakhtar Donetsk:shakhtar;Dynamo Kyiv:dynamo kyiv;Red Star Belgrade:red star;Dinamo Zagreb:dinamo zagreb;Red Bull Salzburg:salzburg;Young Boys:young boys;Toluca:toluca;Le\u00f3n:leon;Necaxa:necaxa;Pachuca:pachuca;Atlas:atlas;Am\u00e9rica de Cali:america de cali;Millonarios:millonarios;Nacional (Uruguai):nacional;Universidad de Chile:universidad de chile;Col\u00f3n:colon;Newell's Old Boys:newells;Rosario Central:rosario central;V\u00e9lez Sarsfield:velez;Lan\u00fas:lanus";
 const OWN=["clubes","premier","laliga","seriea","ligue1","portugal"];
 let OWNIDX=null,ALLIDX=null;
-const add=(arr,label,keys)=>keys.forEach(k=>{const kk=k2(k);if(kk.length>=3)arr.push({label,k:kk,kp:" "+kk+" "})});
+const add=(arr,label,keys,cat)=>keys.forEach(k=>{const kk=k2(k);if(kk.length>=3)arr.push({label,k:kk,kp:" "+kk+" ",cat})});
 function buildIdx(){
   OWNIDX={};ALLIDX=[];
-  OWN.forEach(c=>{const a=[];(SUBS[c]||[]).forEach(x=>add(a,x,[x,...(ALIAS[x]||[])]));OWNIDX[c]=a});
-  {const a=[];BUND.split(";").forEach(e=>{const[l,al]=e.split(":");add(a,l,[l,...al.split(",")])});OWNIDX.bundesliga=a}
+  OWN.forEach(c=>{const a=[];(SUBS[c]||[]).forEach(x=>add(a,x,[x,...(ALIAS[x]||[])],c));OWNIDX[c]=a});
+  {const a=[];BUND.split(";").forEach(e=>{const[l,al]=e.split(":");add(a,l,[l,...al.split(",")],"bundesliga")});OWNIDX.bundesliga=a}
   Object.values(OWNIDX).forEach(a=>a.forEach(e=>ALLIDX.push(e)));
-  {const a=[];XCLUBS.split(";").forEach(e=>{const[l,al]=e.split(":");add(a,l,[l,al]);});a.forEach(e=>ALLIDX.push(e))}
-  NATIDX.forEach(e=>ALLIDX.push(e));
+  {const a=[];XCLUBS.split(";").forEach(e=>{const[l,al]=e.split(":");add(a,l,[l,al],"outras");});a.forEach(e=>ALLIDX.push(e))}
+  NATIDX.forEach(e=>ALLIDX.push({...e,cat:"selecoes"}));
   Object.values(OWNIDX).forEach(a=>a.sort((x,y)=>y.k.length-x.k.length));
   ALLIDX.sort((x,y)=>y.k.length-x.k.length);
 }
@@ -636,14 +636,14 @@ function assignSub(p){
   const tp=" "+k2(p.name)+" ";
   if(p.cat==="nba")return detectUS(p);
   if(p.cat==="selecoes"){const f=findIn(NATIDX,tp);if(f){p.sub=REG[f.r];p.tm=f.label;p.team=f.label;p._t=1}return}
-  if(p.cat==="treino"||p.cat==="retro"){const f=findIn(ALLIDX,tp);if(f){p.sub=f.label;p.team=f.label;p._t=1}return}
+  if(p.cat==="treino"||p.cat==="retro"){const f=findIn(ALLIDX,tp);if(f){p.sub=f.label;p.team=f.label;p._t=1;if(p.cat==="retro"&&f.cat&&f.cat!=="retro"){p._alsoCat=f.cat;p._alsoSub=f.label}}return}
   const l=OWNIDX[p.cat];if(l){const f=findIn(l,tp);if(f){p.sub=f.label;p.team=f.label;p._t=1}}
 }
 const byPt=(a,b)=>a.localeCompare(b,"pt-BR");
 function buildSubs(items){
   if(!OWNIDX)buildIdx();
   items.forEach(assignSub);
-  const sets={};items.forEach(p=>{if(p._t){(sets[p.cat]||(sets[p.cat]=new Set())).add(p.sub)}});
+  const sets={};items.forEach(p=>{if(p._t){(sets[p.cat]||(sets[p.cat]=new Set())).add(p.sub)}if(p._alsoCat&&p._alsoSub){(sets[p._alsoCat]||(sets[p._alsoCat]=new Set())).add(p._alsoSub)}});
   const has=(c,x)=>sets[c]&&sets[c].has(x);
   OWN.forEach(c=>{SUBS[c]=(SUBS[c]||[]).filter(x=>has(c,x))});
   SUBS.selecoes=Object.values(REG).filter(x=>has("selecoes",x));
