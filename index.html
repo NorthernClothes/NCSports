@@ -510,14 +510,24 @@ const RAW="https://raw.githubusercontent.com/NorthernClothes/NCSports/main/"+JSO
 const pick=(o,ks)=>{for(const k of ks){if(o[k]!==undefined&&o[k]!==null&&o[k]!=="")return o[k]}};
 const num=v=>{if(typeof v==="number")return v;if(v==null)return undefined;const n=parseFloat(String(v).replace(/[^\d,.-]/g,"").replace(/\.(?=\d{3}\b)/g,"").replace(",","."));return isNaN(n)?undefined:n};
 const norm=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"");
-const SYN={nationalteam:"selecoes",nationalteams:"selecoes",national:"selecoes",selecao:"selecoes",selecoes:"selecoes",premierleague:"premier",england:"premier",laliga:"laliga",spain:"laliga",seriea:"seriea",italy:"seriea",bundesliga:"bundesliga",germany:"bundesliga",ligue1:"ligue1",france:"ligue1",portugal:"portugal",primeiraliga:"portugal",brazil:"clubes",brasil:"clubes",brazilianclubs:"clubes",clubesbrasileiros:"clubes",retro:"retro",vintage:"retro",nba:"nba",nfl:"nba",mlb:"nba",nhl:"nba",training:"treino",tracksuit:"treino",jacket:"treino",treino:"treino"};
 function catKey(v){
   if(!v)return"outras";
   if(CATS[v])return v;
-  const n=norm(v);
-  for(const[k,l]of Object.entries(CATS))if(norm(l)===n||norm(k)===n)return k;
-  if(SYN[n])return SYN[n];
-  CATS[n]=String(v);return n;
+  const n=String(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+  for(const[k,l]of Object.entries(CATS))if(norm(l)===norm(n)||norm(k)===norm(n))return k;
+  if(/brasil|brazil/.test(n))return"clubes";
+  if(/retro|vintage/.test(n))return"retro";
+  if(/more club|other club|outros clubes|more team/.test(n))return"outras";
+  if(/training|suit|tracksuit|jacket|agasalho|treino/.test(n))return"treino";
+  if(/hockey|nba|nfl|mlb|nhl|basket|baseball|american football/.test(n))return"nba";
+  if(/national|selec/.test(n))return"selecoes";
+  if(/premier|england|english/.test(n))return"premier";
+  if(/la ?liga|spain|spanish/.test(n))return"laliga";
+  if(/portug|primeira/.test(n))return"portugal";
+  if(/bundesliga|german/.test(n))return"bundesliga";
+  if(/ligue|france|french/.test(n))return"ligue1";
+  if(/serie a|italy|italian/.test(n))return"seriea";
+  return"outras";
 }
 const IMG=/^(data:image\/|https?:\/\/|\.{0,2}\/)|\.(jpe?g|png|webp|gif|avif|svg)(\?.*)?$/i;
 function findImgs(r){
