@@ -285,6 +285,11 @@ a.logo{text-decoration:none;color:inherit}
 .ts p{color:#cfcbc4;font-size:15px}
 .ts b{color:var(--or)}
 @media(prefers-reduced-motion:reduce){.sl,.pn{transition:none}}
+.pgn{gap:4px;margin-top:28px;align-items:center}
+.pgn button{min-width:32px;height:32px;padding:0 8px;font-size:13px;font-weight:600;border-radius:6px;color:var(--mut);background:none}
+.pgn button:hover:not(:disabled){color:var(--tx);border-color:#555}
+.pgn button.on{background:var(--or);border-color:var(--or);color:#111}
+.pgn .el{color:var(--mut);font-size:13px;padding:0 2px}
 </style></head><body>
 <div class="bar">Envio com frete grátis para todo o Brasil · Pedido direto pelo WhatsApp</div>
 <header>
@@ -412,7 +417,10 @@ $("#nr").textContent=l.length+(l.length===1?" camisa":" camisas");
 $("#gr").innerHTML=l.slice((pg-1)*PER,pg*PER).map(p=>`<button class="card" data-id="${p.id}"><div class="ph">${p.nat?'<span class="badge">PRONTA ENTREGA</span>':""}${shirt(p)}${p.ver?`<span class="vr">${p.ver}</span>`:""}</div><div class="tm">${p.sub||p.team}</div><div class="nm">${p.name}</div><div class="pr">${p.pr!=null?"":"a partir de "}<b>${money(from(p))}</b></div></button>`).join("")||"<p style='color:var(--mut)'>"+(sb?"Novos modelos de "+sb+" em breve.":flt!=="todas"&&!qs?"Novos modelos desta categoria em breve.":"Nenhuma camisa encontrada.")+" Chame a gente no WhatsApp que a gente encontra.</p>";drawPg(l.length)}
 const PER=20;
 function drawPg(c){const n=Math.ceil(c/PER),el=$("#pgn");if(n<2){el.innerHTML="";return}
-el.innerHTML=`<button data-pg="${pg-1}"${pg<2?" disabled":""} aria-label="P\u00E1gina anterior">\u2039</button>`+Array.from({length:n},(_,i)=>`<button data-pg="${i+1}" class="${i+1===pg?"on":""}" aria-label="P\u00E1gina ${i+1}">${i+1}</button>`).join("")+`<button data-pg="${pg+1}"${pg>=n?" disabled":""} aria-label="Pr\u00F3xima p\u00E1gina">\u203A</button>`}
+const set=new Set([1,n,pg-1,pg,pg+1]);if(pg<=3)[2,3,4].forEach(x=>set.add(x));if(pg>=n-2)[n-1,n-2,n-3].forEach(x=>set.add(x));
+const pgs=[...set].filter(x=>x>=1&&x<=n).sort((x,y)=>x-y);let h=`<button data-pg="${pg-1}"${pg<2?" disabled":""} aria-label="P\u00E1gina anterior">\u2039</button>`,last=0;
+pgs.forEach(i=>{if(i-last>1)h+='<span class="el">\u2026</span>';h+=`<button data-pg="${i}" class="${i===pg?"on":""}" aria-label="P\u00E1gina ${i}">${i}</button>`;last=i});
+h+=`<button data-pg="${pg+1}"${pg>=n?" disabled":""} aria-label="Pr\u00F3xima p\u00E1gina">\u203A</button>`;el.innerHTML=h}
 document.addEventListener("click",e=>{const b=e.target.closest("[data-pg]");if(!b||b.disabled)return;pg=+b.dataset.pg;shop();$("#loja").scrollIntoView({behavior:"smooth"})});
 document.addEventListener("click",e=>{const p=$("#ddp");if(!p)return;const b=e.target.closest("[data-dd]");if(b){p.hidden=!p.hidden;b.setAttribute("aria-expanded",!p.hidden)}else if(!e.target.closest("#ddp"))p.hidden=true});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){const p=$("#ddp");if(p)p.hidden=true}});
@@ -495,68 +503,85 @@ function route(){const m=/^#p-(\d+)$/.exec(location.hash);if(m){if(!S||S.p.id!==
 addEventListener("hashchange",route);if(location.hash)route();
 </script>
 <script>
-/* ===== Carregador do catalogo (catalogo_nc_sports.json) =====
-   Coloque o JSON na MESMA pasta deste HTML, no servidor do site. */
+/* ===== Carregador do catalogo (catalogo_nc_sports.json) ===== */
 (function(){
 const JSON_URL="catalogo_nc_sports.json";
+const RAW="https://raw.githubusercontent.com/NorthernClothes/NCSports/main/"+JSON_URL;
 const pick=(o,ks)=>{for(const k of ks){if(o[k]!==undefined&&o[k]!==null&&o[k]!=="")return o[k]}};
 const num=v=>{if(typeof v==="number")return v;if(v==null)return undefined;const n=parseFloat(String(v).replace(/[^\d,.-]/g,"").replace(/\.(?=\d{3}\b)/g,"").replace(",","."));return isNaN(n)?undefined:n};
-const norm=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+const norm=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"");
+const SYN={nationalteam:"selecoes",nationalteams:"selecoes",national:"selecoes",selecao:"selecoes",selecoes:"selecoes",premierleague:"premier",england:"premier",laliga:"laliga",spain:"laliga",seriea:"seriea",italy:"seriea",bundesliga:"bundesliga",germany:"bundesliga",ligue1:"ligue1",france:"ligue1",portugal:"portugal",primeiraliga:"portugal",brazil:"clubes",brasil:"clubes",brazilianclubs:"clubes",clubesbrasileiros:"clubes",retro:"retro",vintage:"retro",nba:"nba",nfl:"nba",mlb:"nba",nhl:"nba",training:"treino",tracksuit:"treino",jacket:"treino",treino:"treino"};
 function catKey(v){
   if(!v)return"outras";
   if(CATS[v])return v;
   const n=norm(v);
   for(const[k,l]of Object.entries(CATS))if(norm(l)===n||norm(k)===n)return k;
-  const k=n.replace(/[^a-z0-9]+/g,"");CATS[k]=String(v);return k;
+  if(SYN[n])return SYN[n];
+  CATS[n]=String(v);return n;
+}
+const IMG=/^(data:image\/|https?:\/\/|\.{0,2}\/)|\.(jpe?g|png|webp|gif|avif|svg)(\?.*)?$/i;
+function findImgs(r){
+  let v=pick(r,["img","imgs","imagens","imagem","images","image","foto","fotos","photo","photos","picture","pictures","url_imagem","image_url","imageUrl","thumbnail","thumb","cover"]);
+  const flat=x=>Array.isArray(x)?x.flatMap(flat):(x&&typeof x==="object")?Object.values(x).flatMap(flat):(typeof x==="string"?[x]:[]);
+  let a=flat(v).filter(x=>IMG.test(x.trim()));
+  if(!a.length)a=Object.values(r).flatMap(flat).filter(x=>IMG.test(x.trim())&&!/^(https?:\/\/)?[^/]*\/?$/.test(x.trim()));
+  return a.map(x=>x.trim());
+}
+function typeOf(name,r){
+  const t=name+" "+(pick(r,["tipo","type","versao","version","ver"])||"");
+  if(/kids?|child|youth|infantil|junior/i.test(t))return{ver:"Infantil",pr:170,sz:["16","18","20","22","24","26","28"]};
+  if(/retro|vintage|retr\u00f4/i.test(t))return{ver:"Retr\u00f4",pr:200};
+  if(/windbreaker|jacket|corta|tracksuit|coat|agasalho/i.test(t))return{ver:"Corta-Vento",pr:320};
+  if(/\bnfl\b/i.test(t))return{ver:"NFL",pr:250};
+  if(/\bnba\b|basketball/i.test(t))return{ver:"NBA",pr:220};
+  if(/women|woman|feminina|female|lady/i.test(t))return{ver:"Feminina",pr:150};
+  if(/player|jogador/i.test(t))return{ver:"Jogador",pr:180};
+  return{ver:"Torcedor",pr:150};
 }
 function list(d){
   if(Array.isArray(d))return d;
   if(d&&typeof d==="object"){
-    for(const k of["produtos","products","camisas","catalogo","items","itens","data"])if(Array.isArray(d[k]))return d[k];
+    for(const k of["produtos","products","camisas","catalogo","items","itens","data","jerseys"])if(Array.isArray(d[k]))return d[k];
     const a=Object.values(d).find(Array.isArray);if(a)return a;
     const v=Object.values(d);if(v.length&&v.every(x=>x&&typeof x==="object"))return v;
   }
   return[];
 }
+let BASE=location.href;
 function toProduct(r,i){
-  const name=pick(r,["name","nome","titulo","title"]);
+  if(!r||typeof r!=="object")return null;
+  const name=pick(r,["name","nome","titulo","title","product_name","produto"]);
   if(!name)return null;
-  const cat=catKey(pick(r,["cat","categoria","category"]));
-  let sub=pick(r,["sub","subcategoria","time","clube","liga","campeonato","subcategory"]);
-  const ver=pick(r,["ver","versao","vers\u00e3o","version","tipo"]);
-  let img=pick(r,["img","imgs","imagens","imagem","images","image","foto","fotos"]);
-  if(typeof img==="string")img=[img];
-  if(Array.isArray(img))img=img.filter(Boolean);
+  const T=typeOf(String(name),r);
+  let cat=catKey(pick(r,["cat","categoria","category","league","liga"]));
+  if(T.ver==="Retr\u00f4")cat="retro";
+  const sub=pick(r,["sub","subcategoria","subcategory","time","clube","club","campeonato","team"]);
+  let imgs=findImgs(r).map(x=>/^(data:|https?:)/i.test(x)?x:new URL(x,BASE).href);
+  const jp=num(pick(r,["pr","preco","pre\u00e7o","price","valor","preco_venda","sale_price"]));
   const p={
     id:num(pick(r,["id","codigo","c\u00f3digo","sku"]))??(1000+i),
     name:String(name),cat,sub:sub?String(sub):undefined,
     team:String(pick(r,["team","equipe"])||sub||name),
-    ver:ver?String(ver):undefined,
-    c:pick(r,["c","cores"])||["#222","#fff","#e8832f"],
-    d:String(pick(r,["d","descricao","descri\u00e7\u00e3o","description"])||""),
-    sz:pick(r,["sz","tamanhos","sizes"])||null,
-    nat:!!pick(r,["nat","pronta_entrega","prontaEntrega","estoque_nacional"])
+    ver:T.ver,
+    c:["#222","#fff","#e8832f"],
+    d:String(pick(r,["d","descricao","descri\u00e7\u00e3o","description"])||(T.ver+" - "+name)),
+    sz:pick(r,["sz","tamanhos","sizes"])||T.sz||null,
+    nat:!!pick(r,["nat","pronta_entrega","prontaEntrega","estoque_nacional"]),
+    pr:(jp>=100&&jp<=1000)?jp:T.pr
   };
-  if(img&&img.length)p.img=img;
-  const pr=num(pick(r,["pr","preco","pre\u00e7o","price","valor"]));
-  if(pr!=null)p.pr=pr;else{p.nac=num(pick(r,["nac","preco_nacional"]));p.int=num(pick(r,["int","preco_internacional"]));if(p.nac==null&&p.int==null)p.pr=0}
-  if(p.nac==null)p.nac=p.int;if(p.int==null)p.int=p.nac;
+  if(imgs.length)p.img=imgs;
   return p;
 }
 function heroSlides(){$("#hs").innerHTML=[...P].filter(p=>p.img).sort((a,b)=>b.id-a.id).slice(0,4).map(p=>shirt(p)).join("")}
 function apply(data){
   const items=list(data).map(toProduct).filter(Boolean);
+  console.log("NC catalogo:",items.length,"itens; exemplo bruto:",list(data)[0]);
   P.length=0;items.forEach(p=>P.push(p));
-  P.forEach(p=>{
-    if(p.sub){const a=SUBS[p.cat]||(SUBS[p.cat]=[]);if(!a.includes(p.sub))a.push(p.sub)}
-  });
-  Object.values(SUBS).forEach(a=>a.sort((x,y)=>x.localeCompare(y,"pt-BR")));
   heroSlides();cats();shop();
   if(/^#p-/.test(location.hash))route();
   return items.length;
 }
-const RAW="https://raw.githubusercontent.com/NorthernClothes/NCSports/main/"+JSON_URL;
-const get=u=>fetch(u,{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.json()});
+const get=u=>fetch(u,{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);BASE=r.url||u;return r.json()});
 get(JSON_URL).catch(()=>get(RAW))
   .then(d=>{const n=apply(d);if(!n)$("#nr").textContent="O arquivo "+JSON_URL+" foi lido, mas nenhuma camisa foi encontrada nele."})
   .catch(e=>{console.error("Erro ao carregar "+JSON_URL,e);$("#nr").textContent="N\u00e3o foi poss\u00edvel carregar o cat\u00e1logo ("+JSON_URL+"). Confira se o arquivo est\u00e1 no GitHub e se o JSON \u00e9 v\u00e1lido."});
