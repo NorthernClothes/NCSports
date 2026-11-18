@@ -445,7 +445,7 @@ const searchText=p=>p._st||(p._st=nz([p.name,p.team,p.tm,p.sub,p._cat,p._lg,p.ca
 const queryMatches=(p,q)=>{const text=searchText(p),terms=nz(q).split(/\s+/).filter(Boolean);return terms.every(term=>text.includes(term))};
 function shop(){const l=P.filter(p=>(flt==="todas"||p.cat===flt||p._alsoCat===flt)&&(!sb||p.sub===sb||p._alsoSub===sb||p._lg===sb)&&(!window.TP||p.grp===window.TP)&&queryMatches(p,qs)).sort((a,b)=>(b.img?1:0)-(a.img?1:0));const np=Math.max(1,Math.ceil(l.length/PER));if(pg>np)pg=np;
 $("#nr").textContent=l.length.toLocaleString("pt-BR")+(l.length===1?" camisa":" camisas");
-$("#gr").innerHTML=l.slice((pg-1)*PER,pg*PER).map(p=>`<button class="card" data-id="${p.id}"><div class="ph">${p.nat?'<span class="badge">PRONTA ENTREGA</span>':""}${shirt(p)}${p.ver?`<span class="vr">${p.ver}</span>`:""}</div><div class="tm">${p.tm||p.sub||p.team}</div><div class="nm">${p.name}</div><div class="pr">${p.priceRange?`<b>${money(320)} – ${money(450)}</b>`:p.consult?"A consultar":`${p.pr!=null?"":"a partir de "}<b>${money(from(p))}</b>`}</div></button>`).join("")||"<p style='color:var(--mut)'>"+(sb?"Novos modelos de "+sb+" em breve.":flt!=="todas"&&!qs?"Novos modelos desta categoria em breve.":"Nenhuma camisa encontrada.")+" Chame a gente no WhatsApp que a gente encontra.</p>";drawPg(l.length)}
+$("#gr").innerHTML=l.slice((pg-1)*PER,pg*PER).map(p=>`<button class="card" data-id="${p.id}"><div class="ph">${p.nat?'<span class="badge">PRONTA ENTREGA</span>':""}${shirt(p)}${p.ver?`<span class="vr">${p.ver}</span>`:""}</div><div class="tm">${p.tm||p.sub||p.team}</div><div class="nm">${p.name}</div><div class="pr">${p.priceRange?`<b>${money((p.range||[320,450])[0])} – ${money((p.range||[320,450])[1])}</b>`:p.consult?"A consultar":`${p.pr!=null?"":"a partir de "}<b>${money(from(p))}</b>`}</div></button>`).join("")||"<p style='color:var(--mut)'>"+(sb?"Novos modelos de "+sb+" em breve.":flt!=="todas"&&!qs?"Novos modelos desta categoria em breve.":"Nenhuma camisa encontrada.")+" Chame a gente no WhatsApp que a gente encontra.</p>";drawPg(l.length)}
 const PER=20;
 function drawPg(c){const n=Math.ceil(c/PER),el=$("#pgn");if(n<2){el.innerHTML="";return}
 const set=new Set([1,n,pg-1,pg,pg+1]);if(pg<=3)[2,3,4].forEach(x=>set.add(x));if(pg>=n-2)[n-1,n-2,n-3].forEach(x=>set.add(x));
@@ -473,7 +473,7 @@ let S,bag=[];
 const price=(p,o,z,x)=>(p.pr!=null?p.pr:(o==="nac"?p.nac:p.int))+(x?30:0),OL={nac:"Estoque nacional",int:"Estoque internacional",fg:"Frete gr\u00E1tis"};
 function detail(id,h){if(!P.some(x=>x.id===id))return;S={p:P.find(x=>x.id===id),z:null,q:1,v:0,x:false,nm:"",nu:"",o:"int"};drawD();openP("#sheet");$("#sheet").scrollTop=0;if(!h)location.hash="p-"+id}
 function drawD(){const{p,o,z,q,v,x}=S,t=price(p,o,z,x)*q;
-$("#pd").innerHTML=`<button class="bk" data-bk>\u2190 Voltar para a loja</button><div class="pdl"><div class="ph galmain">${shirt(p,v)}${p.img&&p.img.length>1?`<button class="galnav prev" data-v="${(v+p.img.length-1)%p.img.length}" aria-label="Foto anterior">‹</button><button class="galnav next" data-v="${(v+1)%p.img.length}" aria-label="Próxima foto">›</button>`:""}</div>${p.img&&p.img.length>1?`<div class="sw" aria-label="Miniaturas das fotos">${p.img.map((src,i)=>`<button class="${v===i?"on":""}" data-v="${i}" aria-label="Ver foto ${i+1}" aria-pressed="${v===i}"><img src="${src}" alt="" loading="lazy" decoding="async" onerror="this.parentNode.hidden=true"></button>`).join("")}</div>`:""}<div class="pdd"><h3>Descri\u00E7\u00E3o do produto</h3><p>${p.d}</p></div></div><div class="pdr"><div class="eb">${p.team}</div><h2>${p.name}</h2><div class="big">${p.priceRange?`${money(320)} – ${money(450)}`:p.consult?"A consultar":money(price(p,o,z,x))}</div>
+$("#pd").innerHTML=`<button class="bk" data-bk>\u2190 Voltar para a loja</button><div class="pdl"><div class="ph galmain">${shirt(p,v)}${p.img&&p.img.length>1?`<button class="galnav prev" data-v="${(v+p.img.length-1)%p.img.length}" aria-label="Foto anterior">‹</button><button class="galnav next" data-v="${(v+1)%p.img.length}" aria-label="Próxima foto">›</button>`:""}</div>${p.img&&p.img.length>1?`<div class="sw" aria-label="Miniaturas das fotos">${p.img.map((src,i)=>`<button class="${v===i?"on":""}" data-v="${i}" aria-label="Ver foto ${i+1}" aria-pressed="${v===i}"><img src="${src}" alt="" loading="lazy" decoding="async" onerror="this.parentNode.hidden=true"></button>`).join("")}</div>`:""}<div class="pdd"><h3>Descri\u00E7\u00E3o do produto</h3><p>${p.d}</p></div></div><div class="pdr"><div class="eb">${p.team}</div><h2>${p.name}</h2><div class="big">${p.priceRange?`${money((p.range||[320,450])[0])} – ${money((p.range||[320,450])[1])}`:p.consult?"A consultar":money(price(p,o,z,x))}</div>
 ${p.consult?'<p class="nt">O valor exato varia conforme o modelo; consulte pelo WhatsApp.</p>':`<div class="lb">Origem do envio</div><div class="opts">${["nac","int"].map(k=>{const off=k==="nac"&&!p.nat;return`<button class="opt ${o===k?"on":""}${off?" off":""}"${off?` disabled aria-disabled="true"`:""} data-o="${k}">${k==="nac"?"Estoque nacional":"Estoque internacional"}<b>${money(price(p,k,null))}</b><small>${off?"Sob consulta":k==="nac"?"5 a 10 dias \u00FAteis":"20 a 30 dias \u00FAteis"}</small></button>`}).join("")}</div>
 `}<div class="lb" style="display:flex;justify-content:space-between;align-items:baseline">${p.consult?"Tamanho (opcional)":"Selecione o tamanho"}<button type="button" class="gl" data-g="${gTab(p)}">Guia de tamanhos</button></div><div class="sz">${(p.sz||["P","M","G","GG","2XG","3XG","4XG"]).map(s=>`<button class="${z===s?"on":""}" data-z="${s}">${s}</button>`).join("")}</div>
 ${p.consult?"":`<div class="lb">Quantidade</div><div class="qt"><button data-q="-1" aria-label="Diminuir">\u2212</button><span>${q}</span><button data-q="1" aria-label="Aumentar">+</button></div>
@@ -621,10 +621,14 @@ function buildIdx(){
 const findIn=(idx,tp)=>{for(const e of idx)if(tp.includes(e.kp))return e};
 
 /* ---- tipo / preco (tabela do site) ---- */
+const SHORTS_RE=/\bshorts\b|\bshort\b(?![\s\u00a0-]*sleeve)/i;
+const NOTFB_RE=/\b(casual|beach|swim\w*|board|sweat\w*|fleece|cycling|running|yoga|basketball|baseball|jogger|cargo|denim|pajama\w*|sleep\w*|boxer\w*|underwear|gym|fitness|knee|capri|bermuda|golf|tennis|rugby|hockey)\b/i;
+const TOPS_RE=/\b(jersey|shirt|tee|top|polo|vest|tank|suit|set|kit)\b|\+|sleeve/i;
 const KIDRE=/\bkids?\b|\bchild(ren)?\b|infantil|toddler|\bbaby\b|\byouth\b/i;
 const WOMRE=/\b(women|womens|women's|ladies|lady|female|feminina)\b/i;
 function typeOf(name,cat,lg){
   if(KIDRE.test(name)){const bb=/\bbaby\b/i.test(name),m=name.match(/\b(\d{1,2}\/\d{1,2})\s*$/);return{ver:"Infantil",pr:170,sz:bb?(m?[m[1]]:["3/6","6/9","9/12","12/18"]):["16","18","20","22","24","26","28"]}}
+  if(SHORTS_RE.test(name)&&!/\bjacket\b/i.test(name))return{ver:TOPS_RE.test(name)?"Conjunto":"Shorts",pr:100,range:[100,250]};
   if(cat==="treino")return{ver:"Corta-Vento",pr:320};
   if(/windbreaker|jacket|tracksuit|coat|agasalho/i.test(name))return{ver:"Corta-Vento",pr:320};
   if(cat==="retro")return{ver:"Retr\u00f4",pr:200};
@@ -649,16 +653,19 @@ function toProduct(r,i){
   if(!r||typeof r!=="object")return null;
   const name=clean(pick(r,["titulo","name","nome","title","product_name","produto"]));
   const rawCat=pick(r,["liga","cat","categoria","category","league"]);
-  const cat=catKey(rawCat);
-  const shorts=/\bshorts?\b(?![\s-]*sleeve)/i.test(name)&&!/\b(jersey|shirt|top)\b/i.test(name);
-  if(!name||shorts)return null;
+  let cat=catKey(rawCat);
+  const isShorts=SHORTS_RE.test(name);
+  if(!name)return null;
+  if(isShorts&&NOTFB_RE.test(name))return null;
   const feminine=WOMRE.test(name);
   const american=cat==="nba"||/\b(nba|nfl|mlb|nhl|basketball|baseball|hockey)\b/i.test(String(rawCat||"")+" "+name);
-  if(american&&(feminine||KIDRE.test(name)))return null;
+  if(american&&(feminine||KIDRE.test(name)||isShorts))return null;
+  if(!american&&/\bjacket\b/i.test(name))cat="treino";
   const lg=cat==="nba"?(lgOf(name.toLowerCase())||lgOf(String(rawCat||"").toLowerCase())||""):"";
   const T=typeOf(name,cat,lg);
   const leaguePrice=cat==="nba"?({NFL:250,MLB:250,NHL:350}[lg]??null):null;
-  const priceRange=cat==="treino"||T.ver==="Corta-Vento";
+  const priceRange=cat==="treino"||T.ver==="Corta-Vento"||!!T.range;
+  const range=T.range||[320,450];
   const consult=priceRange;
   const photos=r.fotos&&typeof r.fotos==="object"?r.fotos:{};
   const allPhotos=[...(Array.isArray(r.todas_fotos)?r.todas_fotos:[]),...(Array.isArray(photos.todas)?photos.todas:[])];
@@ -666,7 +673,7 @@ function toProduct(r,i){
   const idn=parseInt(r.id,10);
   if(EXTMAP[idn])imgs=imgs.map(u=>u.replace(EXTRE,(a,b,c,d)=>b+"."+EXTMAP[idn]+(d||"")));
   const grp=T.ver==="Infantil"?"kids":feminine?"women":"men";
-  const p={id:isNaN(idn)?1000+i:idn,grp,name,cat,_cat:String(rawCat||""),team:name,ver:T.ver,c:["#222","#fff","#e8832f"],d:name,sz:T.sz||null,nat:false,pr:(leaguePrice!==null&&grp!=="kids")?leaguePrice:T.pr,consult,priceRange};
+  const p={id:isNaN(idn)?1000+i:idn,grp,name,cat,_cat:String(rawCat||""),team:name,ver:T.ver,c:["#222","#fff","#e8832f"],d:name,sz:T.sz||null,nat:false,pr:(leaguePrice!==null&&grp!=="kids")?leaguePrice:T.pr,consult,priceRange,range};
   if(imgs.length)p.img=imgs;
   return p;
 }
