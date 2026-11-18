@@ -336,7 +336,7 @@ a.logo{text-decoration:none;color:inherit}
 <section id="cats"><div class="eb">Navegue</div><h2>Escolha sua categoria</h2><div class="grid" id="ct"></div></section>
 <section id="valores"><div class="eb">Valores</div><h2>Tabela de valores</h2>
 <div class="pt">
-<article class="pg"><h3>Camisas de futebol</h3><small>Seleções, clubes e retrô</small><div class="rw"><span>Camisa Torcedor</span><b>R$ 150,00</b></div><div class="rw"><span>Camisa Jogador</span><b>R$ 180,00</b></div><div class="rw"><span>Camisa Retrô</span><b>R$ 200,00</b></div><div class="rw"><span>Conjunto Infantil</span><b>R$ 170,00</b></div></article>
+<article class="pg"><h3>Camisas de futebol</h3><small>Seleções, clubes e retrô</small><div class="rw"><span>Camisa Torcedor</span><b>R$ 150,00</b></div><div class="rw"><span>Camisa Jogador</span><b>R$ 180,00</b></div><div class="rw"><span>Camisa Retrô</span><b>R$ 200,00</b></div><div class="rw"><span>Torcedor manga longa</span><b>R$ 180,00</b></div><div class="rw"><span>Jogador manga longa</span><b>R$ 210,00</b></div><div class="rw"><span>Retrô manga longa</span><b>R$ 230,00</b></div><div class="rw"><span>Conjunto Infantil</span><b>R$ 170,00</b></div><div class="rw"><span>Shorts e kits (camisa + short)</span><b>R$ 100 – 250</b></div></article>
 <article class="pg"><h3>Esportes americanos</h3><small>Preços por categoria</small><div class="rw"><span>NBA</span><b>R$ 220,00</b></div><div class="rw"><span>NFL</span><b>R$ 250,00</b></div><div class="rw"><span>MLB</span><b>R$ 250,00</b></div><div class="rw"><span>NHL</span><b>R$ 350,00</b></div></article>
 <article class="pg"><h3>Personalização</h3><small>Valores adicionais ao da camisa</small><div class="rw"><span>Nome e número</span><b>+R$ 30,00</b></div><div class="rw"><span>Patch (cada)</span><b>+R$ 10,00</b></div></article>
 </div>
@@ -626,17 +626,19 @@ const NOTFB_RE=/\b(casual|beach|swim\w*|board|sweat\w*|fleece|cycling|running|yo
 const TOPS_RE=/\b(jersey|shirt|tee|top|polo|vest|tank|suit|set|kit)\b|\+|sleeve/i;
 const KIDRE=/\bkids?\b|\bchild(ren)?\b|infantil|toddler|\bbaby\b|\byouth\b/i;
 const WOMRE=/\b(women|womens|women's|ladies|lady|female|feminina)\b/i;
+const LSRE=/long[\s\u00a0-]*sleeve/i;
 function typeOf(name,cat,lg){
+  const LS=LSRE.test(name);
   if(KIDRE.test(name)){const bb=/\bbaby\b/i.test(name),m=name.match(/\b(\d{1,2}\/\d{1,2})\s*$/);return{ver:"Infantil",pr:170,sz:bb?(m?[m[1]]:["3/6","6/9","9/12","12/18"]):["16","18","20","22","24","26","28"]}}
   if(SHORTS_RE.test(name)&&!/\bjacket\b/i.test(name))return{ver:TOPS_RE.test(name)?"Conjunto":"Shorts",pr:100,range:[100,250]};
   if(cat==="treino")return{ver:"Corta-Vento",pr:320};
   if(/windbreaker|jacket|tracksuit|coat|agasalho/i.test(name))return{ver:"Corta-Vento",pr:320};
-  if(cat==="retro")return{ver:"Retr\u00f4",pr:200};
+  if(cat==="retro")return{ver:"Retr\u00f4",pr:LS?230:200};
   if(cat==="nba")return{ver:lg||"NBA",pr:lg==="NFL"?250:220};
-  if(/\bretro\b|vintage/i.test(name))return{ver:"Retr\u00f4",pr:200};
+  if(/\bretro\b|vintage/i.test(name))return{ver:"Retr\u00f4",pr:LS?230:200};
   if(WOMRE.test(name))return{ver:"Feminina",pr:150};
-  if(/player|jogador/i.test(name))return{ver:"Jogador",pr:180};
-  return{ver:"Torcedor",pr:150};
+  if(/player|jogador/i.test(name))return{ver:"Jogador",pr:LS?210:180};
+  return{ver:"Torcedor",pr:LS?180:150};
 }
 
 function list(d){
