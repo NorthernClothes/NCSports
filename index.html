@@ -727,9 +727,28 @@ window.ncFb=function(el,id){
   pp.noimg=true;el.outerHTML=shirt(pp);
 };
 function heroSlides(){$("#hs").innerHTML=[...P].filter(p=>p.img&&!p.noimg).sort((a,b)=>b.id-a.id).slice(0,4).map(p=>shirt(p)).join("")}
+function standardizedName(p){
+  const original=String(p.name||"").trim();
+  const seasonMatch=original.match(/\b(19\d{2}|20\d{2})\s*\/\s*(\d{2}|\d{4})\b/)||original.match(/\b(\d{2})\s*\/\s*(\d{2})\b/);
+  let season="";
+  if(seasonMatch){let y=seasonMatch[1],z=seasonMatch[2];if(y.length===2)y=String(Number(y)>=70?1900+Number(y):2000+Number(y));if(z.length===2)z=String(Math.floor(Number(y)/100)*100+Number(z));season=y+"/"+z}
+  else{const year=original.match(/\b(19\d{2}|20\d{2})\b/);if(year)season=year[1]}
+  let team=p._t&&p.team?String(p.team).trim():"";
+  if(!team)team=original.replace(/\b(?:19\d{2}|20\d{2})\s*\/\s*(?:\d{2}|\d{4})\b|\b\d{2}\s*\/\s*\d{2}\b|\b(?:19\d{2}|20\d{2})\b/g," ").replace(/\b(?:men'?s|women'?s|ladies|female|feminina|masculina|torcedor|supporter|fan|player\s*version|player|jogador|retro|retr[oô]|vintage|home|away|third|fourth|casa|fora|terceira|goleiro|goalkeeper|jersey|shirt|kit|football|soccer|long\s*sleeve|short\s*sleeve|sweatshirt|shorts|short|jacket|coat|tracksuit|windbreaker|treino|infantil|kids|child|youth|originals|eqt)\b/gi," ").replace(/[|,:;()\[\]_-]+/g," ").replace(/\s+/g," ").trim();
+  if(!team)team=original;
+  const model=/\b(home|casa)\b/i.test(original)?"Casa":/\b(away|fora)\b/i.test(original)?"Fora":/\b(third|terceira)\b/i.test(original)?"Terceira":/\b(fourth|quarta)\b/i.test(original)?"Quarta":/\b(goalkeeper|goleiro)\b/i.test(original)?"Goleiro":"";
+  let version="";
+  if(/\b(retro|retr[oô]|vintage)\b/i.test(original)||p.ver==="Retrô")version="Retrô";
+  else if(/\b(player\s*version|player|jogador)\b/i.test(original)||p.ver==="Jogador")version="Jogador";
+  else if(WOMRE.test(original)||p.ver==="Feminina")version="Feminina";
+  else if(KIDRE.test(original)||p.ver==="Infantil")version="Infantil";
+  else if(!/\b(nba|nfl|mlb|nhl)\b/i.test(original))version="Torcedor";
+  let title=team;if(season)title+=" - "+season;if(model)title+=" | "+model;if(version)title+=" ("+version+")";return title;
+}
 function apply(data){
   const items=list(data).map(toProduct).filter(Boolean);
   buildSubs(items);
+  items.forEach(p=>{p.name=standardizedName(p);p.d=p.name});
   items.sort((a,b)=>(b.img?1:0)-(a.img?1:0)); /* camisas sem foto ficam por ultimo */
   P.length=0;items.forEach(p=>P.push(p));
   window.__cc={todas:items.length};items.forEach(p=>{window.__cc[p.cat]=(window.__cc[p.cat]||0)+1;if(p._alsoCat&&p._alsoCat!==p.cat)window.__cc[p._alsoCat]=(window.__cc[p._alsoCat]||0)+1});
