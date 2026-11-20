@@ -447,7 +447,7 @@ $("#sc").innerHTML=(SUBS[flt]||[]).length?`<div class="dd"><button class="ddb" d
 $("#fl").innerHTML=[["todas","Todas as camisas"],...act().filter(([k])=>["selecoes","clubes","retro"].includes(k))].map(([k,v])=>`<a href="#loja" data-k="${k}">${v}</a>`).join("");
 $("#mn").innerHTML=[["todas","Todas as camisas"],...act()].map(([k,v])=>`<button data-k="${k}">${v}${cs(k)}</button>`).join("")+"<button data-g>Guia de tamanhos</button><button data-pr>Prazo de entrega</button>"}
 const nz=t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-const searchText=p=>p._st||(p._st=nz([p.name,p.team,p.tm,p.sub,p._cat,p._lg,p.cat,p.id,p.ver].filter(Boolean).join(" ")));
+const searchText=p=>p._st||(p._st=nz([p.name,p.raw,p.team,p.tm,p.sub,p._cat,p._lg,p.cat,p.id,p.ver].filter(Boolean).join(" ")));
 const queryMatches=(p,q)=>{const text=searchText(p),terms=nz(q).split(/\s+/).filter(Boolean);return terms.every(term=>text.includes(term))};
 function shop(){const l=P.filter(p=>(flt==="todas"||p.cat===flt||p._alsoCat===flt)&&(!sb||p.sub===sb||p._alsoSub===sb||p._lg===sb)&&(!window.TP||p.grp===window.TP)&&queryMatches(p,qs)).sort((a,b)=>(b.img?1:0)-(a.img?1:0));const np=Math.max(1,Math.ceil(l.length/PER));if(pg>np)pg=np;
 $("#nr").textContent=l.length.toLocaleString("pt-BR")+(l.length===1?" camisa":" camisas");
@@ -595,7 +595,7 @@ function detectUS(p){
   let c=pool.filter(x=>t.includes(" "+x.nk+" "));
   if(!c.length)c=pool.filter(x=>x.nk2&&t.includes(" "+x.nk2+" "));
   if(c.length>1){const bc=c.filter(x=>t.includes(" "+x.ck+" "));if(bc.length)c=bc}
-  if(c.length){p.sub=c[0].label;p.team=p.sub;p._lg=c[0].lg;p._t=1;return}
+  if(c.length){p.sub=c[0].label;p.team=p.sub;p._lg=c[0].lg;p._t=1;p._tk=n2(c[0].ck+" "+c[0].nk);p._tk2=n2(c[0].nk);return}
   if(lg){p.sub=lg;p.team=lg;p._lg=lg;p._t=1}
 }
 
@@ -690,9 +690,9 @@ function toProduct(r,i){
 function assignSub(p){
   const tp=" "+k2(p.name)+" ";
   if(p.cat==="nba")return detectUS(p);
-  if(p.cat==="selecoes"){const f=findIn(NATIDX,tp);if(f){p.sub=REG[f.r];p.tm=f.label;p.team=f.label;p._t=1}return}
-  if(p.cat==="treino"||p.cat==="retro"){const f=findIn(ALLIDX,tp);if(f){p.sub=f.label;p.team=f.label;p._t=1;if(p.cat==="retro"&&f.cat&&f.cat!=="retro"){p._alsoCat=f.cat;p._alsoSub=f.label}}return}
-  const l=OWNIDX[p.cat];if(l){const f=findIn(l,tp);if(f){p.sub=f.label;p.team=f.label;p._t=1}}
+  if(p.cat==="selecoes"){const f=findIn(NATIDX,tp);if(f){p.sub=REG[f.r];p.tm=f.label;p.team=f.label;p._t=1;p._tk=f.k}return}
+  if(p.cat==="treino"||p.cat==="retro"){const f=findIn(ALLIDX,tp);if(f){p.sub=f.label;p.team=f.label;p._t=1;p._tk=f.k;if(p.cat==="retro"&&f.cat&&f.cat!=="retro"){p._alsoCat=f.cat;p._alsoSub=f.label}}return}
+  const l=OWNIDX[p.cat];if(l){const f=findIn(l,tp);if(f){p.sub=f.label;p.team=f.label;p._t=1;p._tk=f.k}}
 }
 const byPt=(a,b)=>a.localeCompare(b,"pt-BR");
 function buildSubs(items){
@@ -727,28 +727,115 @@ window.ncFb=function(el,id){
   pp.noimg=true;el.outerHTML=shirt(pp);
 };
 function heroSlides(){$("#hs").innerHTML=[...P].filter(p=>p.img&&!p.noimg).sort((a,b)=>b.id-a.id).slice(0,4).map(p=>shirt(p)).join("")}
-function standardizedName(p){
-  const original=String(p.name||"").trim();
-  const seasonMatch=original.match(/\b(19\d{2}|20\d{2})\s*\/\s*(\d{2}|\d{4})\b/)||original.match(/\b(\d{2})\s*\/\s*(\d{2})\b/);
-  let season="";
-  if(seasonMatch){let y=seasonMatch[1],z=seasonMatch[2];if(y.length===2)y=String(Number(y)>=70?1900+Number(y):2000+Number(y));if(z.length===2)z=String(Math.floor(Number(y)/100)*100+Number(z));season=y+"/"+z}
-  else{const year=original.match(/\b(19\d{2}|20\d{2})\b/);if(year)season=year[1]}
-  let team=p._t&&p.team?String(p.team).trim():"";
-  if(!team)team=original.replace(/\b(?:19\d{2}|20\d{2})\s*\/\s*(?:\d{2}|\d{4})\b|\b\d{2}\s*\/\s*\d{2}\b|\b(?:19\d{2}|20\d{2})\b/g," ").replace(/\b(?:men'?s|women'?s|ladies|female|feminina|masculina|torcedor|supporter|fan|player\s*version|player|jogador|retro|retr[oô]|vintage|home|away|third|fourth|casa|fora|terceira|goleiro|goalkeeper|jersey|shirt|kit|football|soccer|long\s*sleeve|short\s*sleeve|sweatshirt|shorts|short|jacket|coat|tracksuit|windbreaker|treino|infantil|kids|child|youth|originals|eqt)\b/gi," ").replace(/[|,:;()\[\]_-]+/g," ").replace(/\s+/g," ").trim();
-  if(!team)team=original;
-  const model=/\b(home|casa)\b/i.test(original)?"Casa":/\b(away|fora)\b/i.test(original)?"Fora":/\b(third|terceira)\b/i.test(original)?"Terceira":/\b(fourth|quarta)\b/i.test(original)?"Quarta":/\b(goalkeeper|goleiro)\b/i.test(original)?"Goleiro":"";
-  let version="";
-  if(/\b(retro|retr[oô]|vintage)\b/i.test(original)||p.ver==="Retrô")version="Retrô";
-  else if(/\b(player\s*version|player|jogador)\b/i.test(original)||p.ver==="Jogador")version="Jogador";
-  else if(WOMRE.test(original)||p.ver==="Feminina")version="Feminina";
-  else if(KIDRE.test(original)||p.ver==="Infantil")version="Infantil";
-  else if(!/\b(nba|nfl|mlb|nhl)\b/i.test(original))version="Torcedor";
-  let title=team;if(season)title+=" - "+season;if(model)title+=" | "+model;if(version)title+=" ("+version+")";return title;
+/* ---- nomes padronizados: "Time - Ano | Uniforme · Detalhes · Cor" (o titulo original fica em p.raw) ---- */
+const NM_COLOR={white:["Branca","Branco"],black:["Preta","Preto"],red:["Vermelha","Vermelho"],yellow:["Amarela","Amarelo"],purple:["Roxa","Roxo"],gold:["Dourada","Dourado"],blue:["Azul","Azul"],green:["Verde","Verde"],orange:["Laranja","Laranja"],pink:["Rosa","Rosa"],grey:["Cinza","Cinza"],gray:["Cinza","Cinza"],silver:["Prata","Prata"],brown:["Marrom","Marrom"],beige:["Bege","Bege"],khaki:["Caqui","Caqui"],cream:["Creme","Creme"],maroon:["Vinho","Vinho"],burgundy:["Vinho","Vinho"],wine:["Vinho","Vinho"],turquoise:["Turquesa","Turquesa"],cyan:["Ciano","Ciano"],lime:["Verde-lim\u00e3o","Verde-lim\u00e3o"],cardinal:["Cardinal","Cardinal"],scarlet:["Vermelha","Vermelho"],multicolor:["Multicolor","Multicolor"],ivory:["Marfim","Marfim"],olive:["Verde-oliva","Verde-oliva"],teal:["Verde-azulado","Verde-azulado"],coffee:["Caf\u00e9","Caf\u00e9"],multi:["Multicolor","Multicolor"],camel:["Camel","Camel"],navy:["Azul marinho","Azul marinho"],royal:["Azul royal","Azul royal"],sky:["Azul celeste","Azul celeste"]};
+const NM_SHADE={light:"claro",dark:"escuro",deep:"escuro"};
+const NM_KIT={home:"Casa",away:"Fora",third:"Terceira",fourth:"Quarta",forth:"Quarta",goalkeeper:"Goleiro",gk:"Goleiro",training:"Treino",concept:"Conceito",special:"Especial",commemorative:"Comemorativa",originals:"Originals",eqt:"EQT"};
+const NM_WORD={jersey:"",jerseys:"",team:"",soccer:"",football:"",basketball:"",nba:"",nfl:"",mlb:"",nhl:"",player:"",with:"com",and:"e","&":"e",sweatshirt:"Moletom",polo:"Polo",jacket:"Jaqueta",windbreaker:"Corta-vento",tracksuit:"Agasalho",suit:"Conjunto",vest:"Colete",shorts:"Short",short:"Short",pants:"Cal\u00e7a",pant:"Cal\u00e7a",kit:"Conjunto",set:"Conjunto",zipper:"z\u00edper",padded:"acolchoado",tee:"Camiseta",shirt:"Camisa",camo:"camuflado",camouflage:"camuflado",stripes:"listras",striped:"listrado",pattern:"estampa",collar:"gola",edition:"Edi\u00e7\u00e3o",anniversary:"Anivers\u00e1rio",to:"para",gradient:"degrad\u00ea",gradien:"degrad\u00ea",gradiant:"degrad\u00ea"};
+const NM_PHRASES=[[/\b(city|statement|icon|association|earned|classic|signature|urban|hardwood classics?)\s+edition\b/gi,m=>m.replace(/\s+/g,"_")],[/\breverse\s+retro\b/gi,"Reverse_Retro"],[/\bheat\s+pressed\b/gi," "],[/\blong[\s-]*sleeve[sd]?\b/gi,"Manga_longa"],[/\bshort[\s-]*sleeve[sd]?\b/gi,"Manga_curta"],[/\bsleeveless\b/gi,"Sem_manga"],[/\bfull[\s-]*zipper\b/gi,"z\u00edper_completo"],[/\bhalf[\s-]*zipper\b/gi,"meio_z\u00edper"],[/\bpolo[\s-]*collar\b/gi,"gola_polo"],[/\bspecial[\s-]*ed[a-z]*n\b/gi,"Edi\u00e7\u00e3o_especial"],[/\bcommemorative\s+edition\b/gi,"Edi\u00e7\u00e3o_comemorativa"],[/\banniversary\s+edition\b/gi,"Edi\u00e7\u00e3o_de_anivers\u00e1rio"],[/\bpre[\s-]*match\b/gi,"Pr\u00e9-jogo"],[/\btraining\s+suit\b/gi,"Agasalho_de_treino"],[/\blong\s+pants\b/gi,"Cal\u00e7a_longa"],[/\bshort\s+pants\b/gi,"Short"]];
+const NM_COLOR2={"navy blue":"navy","royal blue":"royal","sky blue":"sky","baby blue":"lightblue","light blue":"lightblue","dark blue":"darkblue","bright blue":"blue","dark green":"darkgreen","light green":"lightgreen","army green":"armygreen","olive green":"olive","wine red":"wine","dark red":"darkred","light grey":"lightgrey","light gray":"lightgrey","dark grey":"darkgrey","dark gray":"darkgrey","hot pink":"pink","rose red":"red","lake blue":"blue","sapphire blue":"blue","off white":"offwhite"};
+const NM_COLOR_X={lightblue:"Azul claro",darkblue:"Azul escuro",darkgreen:"Verde escuro",lightgreen:"Verde claro",armygreen:"Verde militar",darkred:["Vermelha escura","Vermelho escuro"],lightgrey:"Cinza claro",darkgrey:"Cinza escuro",offwhite:"Off-white"};
+const NM_ACR=new Set(["PSG","USA","UAE","NBA","NFL","MLB","NHL","EQT","FC","AC","AS","CF","SC","CD","CP","RB","SL","US","UK","LA","NY","RJ","JJ","AJ","DK","TJ","PK","II","III","IV","VI"]);
+const NM_TYPE=[/\b(?:player|fans?)\s*version\b/gi,/\b(?:men'?s?|women'?s?|ladies|lady|female|kids?|youth|toddler|child(?:ren)?|infantil|feminina|masculina)\b/gi,/\b(?:retro|vintage)\b/gi,/\bS-?\s?(?:XXXXL|XXXL|XXL|4XL)\b/gi];
+const NM_STOPAM=new Set("player limited elite game team alternate alt throwback cooperstown reverse draft nike vapor untouchable jersey road home away batting practice mesh collection therma stitched authentic salute service legend classic rush retired pick first round".split(" "));
+let NM_KNOWN=null;
+function nmKnown(){if(NM_KNOWN)return NM_KNOWN;NM_KNOWN=new Set([...Object.keys(NM_COLOR),...Object.keys(NM_SHADE),...Object.keys(NM_KIT),...Object.keys(NM_WORD),"long","short","full","half","special","pre","edition","blue","fan","fans","version","edtion","jersey","original"]);return NM_KNOWN}
+function nmCase(w){
+  if(/^[A-Z][A-Z.'\-]{3,}$/.test(w)&&!NM_ACR.has(w.replace(/[.']/g,"")))return w.charAt(0)+w.slice(1).toLowerCase();
+  return w;
 }
+function nmSeason(t){
+  const fix=n=>n<=28?2000+n:1900+n;
+  let m=t.match(/(^|[^\d\/])((?:19|20)\d{2}|\d{2})\s*\/\s*((?:19|20)\d{2}|\d{2})(?![\d\/])/);
+  if(m){let a=+m[2];if(m[2].length===2)a=fix(a);return {season:a+"/"+String(m[3]).slice(-2),rest:t.replace(m[0],m[1]+" ")}}
+  m=t.match(/(^|[^\d])((?:19|20)\d{2})\s*-\s*(\d{2}|(?:19|20)\d{2})(?!\d)/);
+  if(m)return {season:m[2]+"/"+String(m[3]).slice(-2),rest:t.replace(m[0],m[1]+" ")};
+  m=t.match(/(^|[^\d])(\d{2})-(\d{2})(?![\d-])/);
+  if(m&&((+m[2]+1)%100)===+m[3]){const a=fix(+m[2]);return {season:a+"/"+m[3],rest:t.replace(m[0],m[1]+" ")}}
+  m=t.match(/(^|[^\d])(20\d{2})(\d{2})(?!\d)/);
+  if(m)return {season:m[2]+"/"+m[3],rest:t.replace(m[0],m[1]+" ")};
+  m=t.match(/(^|[^\d])((?:19|20)\d{2})(?!\d)/);
+  if(m)return {season:m[2],rest:t.replace(m[0],m[1]+" ")};
+  return {season:"",rest:t};
+}
+function nmRemovePhrase(tokens,phrase){
+  const ph=String(phrase||"").split(" ").filter(Boolean);if(!ph.length)return null;
+  const flat=[];tokens.forEach((tok,ti)=>{n2(tok).split(" ").forEach(w=>{if(w&&!STOP.has(w))flat.push({w,ti})})});
+  for(let i=0;i+ph.length<=flat.length;i++){
+    let ok=true;for(let j=0;j<ph.length;j++)if(flat[i+j].w!==ph[j]){ok=false;break}
+    if(ok){let a=flat[i].ti,b=flat[i+ph.length-1].ti;const sw=k=>{const q=n2(tokens[k]);return q&&q.split(" ").every(w=>STOP.has(w))};while(a>0&&sw(a-1))a--;while(b+1<tokens.length&&sw(b+1))b++;return tokens.slice(0,a).concat(tokens.slice(b+1))}
+  }
+  return null;
+}
+function standardizedName(p){
+  const raw=String(p.raw||p.name||"").trim();
+  let t=raw.replace(/[\u201c\u201d"]/g,"").replace(/[\u2010-\u2015\u2212]/g,"-").replace(/(\w)&(\w)/g,"$1 & $2").replace(/_+/g," ").replace(/\+/g," + ").replace(/(\S)#(\d)/g,"$1 #$2").replace(/(\d)\s*#\s*(\d)/g,"$1 #$2");
+  const ss=nmSeason(t);t=ss.rest;const season=ss.season;
+  NM_PHRASES.forEach(([re,to])=>{t=t.replace(re,to)});
+  NM_TYPE.forEach(re=>{t=t.replace(re," ")});
+  let toks=t.split(/\s+/).filter(x=>x&&x!=="-"&&x!=="/"&&x!==","&&x!==".");
+  const american=p.cat==="nba";
+  let team="",league=p._lg||"";
+  const cleanLabel=s=>String(s||"").replace(/\s*\((?:NBA|NFL|MLB|NHL)\)\s*$/,"");
+  if(p._tk){const r=nmRemovePhrase(toks,p._tk)||(p._tk2?nmRemovePhrase(toks,p._tk2):null);if(r)toks=r;team=cleanLabel(p.team)}
+  if(!team&&american&&league!=="NBA"||(!team&&american&&!p._tk)){
+    // NFL / MLB / NHL: o titulo traz o jogador e nao o time
+    const lead=[];let i=0;
+    while(i<toks.length){
+      const w=toks[i],lw=w.toLowerCase().replace(/[^a-z']/g,"");
+      if(/^#?\d/.test(w)||w.indexOf("_")>=0||lw==="")break;
+      if(i<2?(i===0&&(NM_COLOR[lw]||NM_SHADE[lw]||NM_KIT[lw]||NM_STOPAM.has(lw))):(NM_COLOR[lw]||NM_SHADE[lw]||NM_KIT[lw]||NM_STOPAM.has(lw)||/^(?:nfl|mlb|nhl|nba|jersey)$/.test(lw)))break;
+      lead.push(w);i++;
+    }
+    if(lead.length>=2){team=lead.map(nmCase).join(" ");toks=toks.slice(i)}
+  }
+  if(!team&&!american){
+    // time nao reconhecido: o time e o trecho do comeco ate a primeira palavra conhecida (uniforme, cor, peca...)
+    const kn=nmKnown(),lead=[];let i=0;
+    while(i<toks.length){const lw=toks[i].toLowerCase().replace(/[^a-z\u00c0-\u017f']/g,"");if(toks[i].indexOf("_")>=0||/^#?\d/.test(toks[i]))break;if(i>0&&kn.has(lw))break;lead.push(toks[i]);i++}
+    if(lead.length){team=lead.map(nmCase).join(" ");toks=toks.slice(i)}
+  }
+  {const ex=[];toks.forEach(w=>{if(w.indexOf("-")>0&&w.split("-").every(x=>{const l=x.toLowerCase();return NM_COLOR[l]||NM_SHADE[l]||l==="to"||l==="and"||l==="with"||l==="gradient"}))w.split("-").forEach(x=>ex.push(x));else ex.push(w)});toks=ex}
+  // classificar o resto: uniforme, cor, detalhes
+  const kit=[],colors=[],det=[];
+  const isCol=x=>{const l=String(x||"").toLowerCase();return !!(NM_COLOR[l]||NM_SHADE[l]||l==="blue")};
+  for(let i=0;i<toks.length;i++){
+    let w=toks[i];const lw=w.toLowerCase().replace(/[^a-z\u00c0-\u017f'\/\-&+#0-9]/g,"");
+    if(lw==="+"){det.push("+");continue}
+    if(i+1<toks.length&&/^#\d/.test(toks[i+1])&&/^[A-Za-z.'\-]+$/.test(w)){det.push(nmCase(w));continue}
+    if((lw==="&"||lw==="and"||lw==="with")&&i>0&&isCol(toks[i-1])&&isCol(toks[i+1]))continue;
+    if(lw.indexOf("/")>0&&lw.split("/").every(x=>NM_COLOR[x])){colors.push(lw.split("/").map(x=>NM_COLOR[x]));continue}
+    if(i+1<toks.length){
+      const pair=lw+" "+toks[i+1].toLowerCase().replace(/[^a-z]/g,"");
+      if(NM_COLOR2[pair]){const k=NM_COLOR2[pair];const v=NM_COLOR_X[k]||(NM_COLOR[k]);colors.push([Array.isArray(v)?v:(typeof v==="string"?[v,v]:v)]);i++;continue}
+    }
+    if(NM_SHADE[lw]&&i+1<toks.length&&NM_COLOR[toks[i+1].toLowerCase().replace(/[^a-z]/g,"")]){const c=NM_COLOR[toks[i+1].toLowerCase().replace(/[^a-z]/g,"")];colors.push([[c[0]+" "+NM_SHADE[lw],c[1]+" "+NM_SHADE[lw]]]);i++;continue}
+    const clr=NM_COLOR[lw];
+    if(clr){colors.push([clr]);continue}
+    if(NM_KIT[lw]){let k=NM_KIT[lw];if(i+1<toks.length&&/^[1-4]$/.test(toks[i+1])){k+=" "+toks[i+1];i++}kit.push(k);continue}
+    if(Object.prototype.hasOwnProperty.call(NM_WORD,lw)){const v=NM_WORD[lw];if(v)det.push(v);continue}
+    if(w.indexOf("_")>=0){det.push(w.replace(/_/g," "));continue}
+    det.push(nmCase(w));
+  }
+  const text=det.join(" ");
+  const masc=/\b(?:Short|Corta-vento|Moletom|Colete|Agasalho|Conjunto|Cal\u00e7a)\b/.test(text);
+  const colorTxt=colors.map(g=>g.map(c=>c[masc?1:0]).join("/")).join("/").replace(/\/\//g,"/");
+  const parts=[kit.join(" "),text.replace(/\s+\+\s+/g," + ").replace(/\s+/g," ").replace(/(z\u00edper completo|meio z\u00edper)\s+(Corta-vento|Jaqueta|Moletom|Colete)/i,"$2 $1").trim(),colorTxt].filter(Boolean);
+  if(!parts[1]&&false)parts.length=0;
+  let first=parts.join(" \u00b7 ");if(!/^[x\u00d7]\s/i.test(first))first=first.replace(/^([a-z\u00e0-\u00ff])/,m=>m.toUpperCase());
+  if(!team)return ((season?season+(first?" | ":""):"")+first||raw)+((p.ver==="Jogador"||p.ver==="Infantil"||p.ver==="Feminina")?" ("+p.ver+")":"");
+  let title=team;
+  if(american&&league&&league!=="NBA"&&!p._tk)title+=" - "+league+(season?" "+season:"");
+  else if(season)title+=" - "+season;
+  if(first)title+=" | "+first;
+  const tag=p.ver==="Jogador"?"Jogador":p.ver==="Infantil"?"Infantil":p.ver==="Feminina"?"Feminina":"";
+  return title+(tag?" ("+tag+")":"");
+}
+
 function apply(data){
   const items=list(data).map(toProduct).filter(Boolean);
   buildSubs(items);
-  items.forEach(p=>{p.name=standardizedName(p);p.d=p.name});
+  items.forEach(p=>{p.raw=p.name;p.name=standardizedName(p);p.d=p.raw});
   items.sort((a,b)=>(b.img?1:0)-(a.img?1:0)); /* camisas sem foto ficam por ultimo */
   P.length=0;items.forEach(p=>P.push(p));
   window.__cc={todas:items.length};items.forEach(p=>{window.__cc[p.cat]=(window.__cc[p.cat]||0)+1;if(p._alsoCat&&p._alsoCat!==p.cat)window.__cc[p._alsoCat]=(window.__cc[p._alsoCat]||0)+1});
