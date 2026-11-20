@@ -8,7 +8,7 @@
 <meta property="og:locale" content="pt_BR">
 <meta property="og:title" content="NC Sports – Northern Clothes">
 <meta property="og:description" content="Camisas nacionais e internacionais com frete grátis para todo o Brasil.">
-<meta property="og:url" content="https://ncsports.pages.dev">
+<meta property="og:url" content="https://ncsportsmg.com">
 <title>NC Sports – Northern Clothes</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,600;0,900;1,900&family=Bebas+Neue&family=Barlow:wght@600&display=swap" rel="stylesheet">
 <link rel="icon" type="image/jpg" href="/favicon.jpg">
@@ -501,7 +501,7 @@ function count(){const n=bag.reduce((s,i)=>s+i.q,0),c=$("#cn");c.textContent=n;c
 function drawBag(){const tot=bag.reduce((s,i)=>s+price(i.p,i.o,i.z,i.x)*i.q,0);
 $("#bl").innerHTML=bag.length?bag.map((i,x)=>`<div class="li"><div class="ph">${shirt(i.p)}</div><div>${i.p.name}<br><small>${i.z} \u00B7 ${OL[i.o]} \u00B7 ${i.q}x ${money(price(i.p,i.o,i.z,i.x))}${i.x?`<br>Personaliza\u00E7\u00E3o: ${i.nm} \u00B7 n\u00BA ${i.nu} (+R$ 30,00)`:""}</small></div><button data-r="${x}" aria-label="Remover">${icon("x")}</button></div>`).join("")+`<div class="tot"><span>Total</span><span>${money(tot)}</span></div><label class="lb" for="cname">Seu nome</label><input id="cname" class="in" placeholder="Digite seu nome" autocomplete="name" value="${cust.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;")}"><button class="btn" id="fnb"${cust.trim()?" hidden":""}>Finalizar pelo WhatsApp</button><a class="btn" id="fin" target="_blank" rel="noopener" href="${orderUrl()}"${cust.trim()?"":" hidden"}>Finalizar pelo WhatsApp</a><div class="er" id="fe"></div>`:`<p style="color:var(--mut);margin-top:16px">Sua sacola est\u00E1 vazia. Escolha uma camisa para come\u00E7ar.</p>`}
 let cust="";
-const SITE="https://ncsports.pages.dev";
+const SITE="https://ncsportsmg.com";
 function orderUrl(){const base=SITE||location.href.split("#")[0],t=bag.reduce((s,i)=>s+price(i.p,i.o,i.z,i.x)*i.q,0),L="--------------------";
 const items=bag.map((i,n)=>{const pb=price(i.p,i.o,i.z,false)*i.q,nac=i.o==="nac";return[`*${n+1}. ${i.p.name}*`,`\u2022 Tamanho: ${i.z}`,`\u2022 Quantidade: ${i.q}`,`\u2022 Estoque: ${nac?"Nacional":"Internacional"}`,`\u2022 Prazo estimado: ${nac?"5 a 10":"20 a 30"} dias \u00FAteis`,i.x?`\u2022 Personaliza\u00E7\u00E3o: ${i.nm} \u2013 N\u00BA ${i.nu}`:null,i.x?`\u2022 Valor da camisa: ${money(pb)}`:`\u2022 Valor: ${money(pb)}`,i.x?`\u2022 Personaliza\u00E7\u00E3o: ${money(30*i.q)}`:null,"",`\u{1F517} Ver camisa: ${base}#p-${i.p.id}`].filter(x=>x!==null).join("\n")});
 return wa(["\u26BD\uFE0F *OL\u00C1, NCSPORTS! QUERO FAZER UM PEDIDO!*","","\u{1F464} *Cliente:* "+(cust.trim()||"(nome)"),"",L,"","\u{1F6CD} *MEU PEDIDO*",""].join("\n")+"\n"+items.join("\n\n")+"\n\n"+[L,"","\u{1F4B0} *RESUMO DO PEDIDO*","","*Total: "+money(t)+"*","","\u{1F69A} Frete gr\u00E1tis para todo o Brasil!","",L,"","\u{1F4F2} Gostaria de dar continuidade \u00E0 compra. Aguardo o atendimento!"].join("\n"))}
